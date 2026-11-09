@@ -9,21 +9,47 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
 
 // Public Authentication Routes
-Route::post('/login', function (Request $request) {
-    $request->validate([
+Route::post('/register', function (Request $request) {$request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|string|email|max:255|unique:users',
+        'password' => 'required|string|min:6',
+        'phone_number' => 'nullable|string',
+    ]);
+
+    $user = User::create([
+        'name' => $request->name,
+        'email' => $request->email,
+        'password' => Hash::make($request->password),
+        'role' => 'member',
+        'phone_number' => $request->phone_number,
+        'membership_tier' => 'Bronze',
+    ]);
+
+    $token =$user->createToken('auth_token')->plainTextToken;
+
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Registration successful',
+        'access_token' => $token,
+        'token_type' => 'Bearer',
+        'user' => $user
+    ], 201);
+});
+
+Route::post('/login', function (Request $request) {$request->validate([
         'email' => 'required|email',
         'password' => 'required',
     ]);
 
-    $user = User::where('email', $request->email)->first();
+    $user = User::where('email',$request->email)->first();
 
-    if (! $user || ! Hash::check($request->password, $user->password)) {
+    if (! $user || ! Hash::check($request->password,$user->password)) {
         throw ValidationException::withMessages([
             'email' => ['The provided credentials do not match our records.'],
         ]);
     }
 
-    $token = $user->createToken('auth_token')->plainTextToken;
+    $token =$user->createToken('auth_token')->plainTextToken;
 
     return response()->json([
         'status' => 'success',
@@ -41,8 +67,7 @@ Route::get('/products/{product}', [ProductController::class, 'show']);
 // Protected Routes (Sanctum Authenticated)
 Route::middleware('auth:sanctum')->group(function () {
 
-    Route::post('/logout', function (Request $request) {
-        $request->user()->tokens()->delete();
+    Route::post('/logout', function (Request $request) {$request->user()->tokens()->delete();
 
         return response()->json([
             'status' => 'success',

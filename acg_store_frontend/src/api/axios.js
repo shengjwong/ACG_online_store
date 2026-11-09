@@ -8,7 +8,6 @@ const api = axios.create({
   },
 });
 
-// Interceptor to automatically attach Sanctum Bearer token
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('access_token');
   if (token) {
