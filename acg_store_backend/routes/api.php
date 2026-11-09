@@ -1,33 +1,43 @@
 <?php
 
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\ProductController;
+use Illuminate\Validation\ValidationException;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-*/
+// Public Authentication Routes
+Route::post('/login', function (Request $request) {
+    $request->validate([
+        'email' => 'required|email',
+        'password' => 'required',
+    ]);
 
-// Public Routes (Accessible by anyone / Frontend Storefront)
-Route::get('/products', [ProductController::class, 'index']);
-Route::get('/products/{id}', [ProductController::class, 'show']);
+    $user = User::where('email', $request->email)->first();
 
-// Protected Routes (Require Authentication via Sanctum Token)
-Route::middleware('auth:sanctum')->group(function () {
-    
-    // User Profile Routes
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
-    
-    // Product Management Routes (Admin)
-    Route::post('/products', [ProductController::class, 'store']);
-    Route::put('/products/{id}', [ProductController::class, 'update']);
-    Route::delete('/products/{id}', [ProductController::class, 'destroy']);
+    if (! $user || ! Hash::check($request->password, $user->password)) {
+        throw ValidationException::withMessages([
+            'email' => ['The provided credentials do not match our records.'],
+        ]);
+    }
 
-    // User Management Routes (Admin)
-    Route::apiResource('users', UserController::class);
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Login successful',
+        'access_token' => $token,
+        'token_type' => 'Bearer',
+        'user' => $user
+    ], 200);
+});
+
+// Protected Logout Route
+Route::middleware('auth:sanctum')->post('/logout', function (Request $request) {
+    $request->user()->tokens()->delete();
+
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Logged out successfully'
+    ], 200);
 });

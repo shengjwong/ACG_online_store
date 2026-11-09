@@ -3,24 +3,24 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Laravel\Sanctum\HasApiTokens; // <--- 1. IMPORT THIS
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes; // <--- 2. USE IT HERE
 
     protected $fillable = [
         'name',
         'email',
         'password',
         'role',
-        'profile_image',
         'phone_number',
+        'profile_image',
         'membership_tier',
-        'membership_status',
-        'membership_expires_at',
+        'membership_expiry',
     ];
 
     protected $hidden = [
@@ -28,19 +28,11 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    protected $casts = [
-        'membership_expires_at' => 'datetime',
-        'password' => 'hashed',
-    ];
-
-    // Relationships
-    public function cartItems(): HasMany
+    protected function casts(): array
     {
-        return $this->hasMany(CartItem::class);
-    }
-
-    public function orders(): HasMany
-    {
-        return $this->hasMany(Order::class);
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
     }
 }
