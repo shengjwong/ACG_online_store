@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\UserController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -32,12 +34,27 @@ Route::post('/login', function (Request $request) {
     ], 200);
 });
 
-// Protected Logout Route
-Route::middleware('auth:sanctum')->post('/logout', function (Request $request) {
-    $request->user()->tokens()->delete();
+// Public Product Routes (For store showcase)
+Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/{product}', [ProductController::class, 'show']);
 
-    return response()->json([
-        'status' => 'success',
-        'message' => 'Logged out successfully'
-    ], 200);
+// Protected Routes (Sanctum Authenticated)
+Route::middleware('auth:sanctum')->group(function () {
+
+    Route::post('/logout', function (Request $request) {
+        $request->user()->tokens()->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Logged out successfully'
+        ], 200);
+    });
+
+    // Protected User Management CRUD
+    Route::apiResource('users', UserController::class);
+
+    // Protected Product Admin Operations (Create, Update, Delete)
+    Route::post('/products', [ProductController::class, 'store']);
+    Route::put('/products/{product}', [ProductController::class, 'update']);
+    Route::delete('/products/{product}', [ProductController::class, 'destroy']);
 });
