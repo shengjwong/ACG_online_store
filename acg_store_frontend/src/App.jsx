@@ -10,6 +10,7 @@ function ProductList() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Fetches all products (both active and inactive)
     api.get('/products')
       .then((res) => {
         setProducts(res.data.data || res.data);
@@ -25,13 +26,48 @@ function ProductList() {
       <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>Product Catalog</h2>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.5rem', maxWidth: '1100px', margin: '0 auto' }}>
         {products.map((item) => {
-          // Construct storage URL for Laravel public disk uploads or fallback placeholder
           const imageUrl = item.image
             ? `http://127.0.0.1:8000/storage/${item.image}`
             : 'https://via.placeholder.com/300x200?text=No+Image';
 
+          const isInactive = item.status === 'inactive';
+
           return (
-            <div key={item.id} style={{ border: '1px solid #333', borderRadius: '10px', padding: '1.5rem', background: '#1e1e1e', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div 
+              key={item.id} 
+              style={{ 
+                border: isInactive ? '1px solid #555' : '1px solid #333', 
+                borderRadius: '10px', 
+                padding: '1.5rem', 
+                background: '#1e1e1e', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                justify: 'space-between',
+                position: 'relative',
+                opacity: isInactive ? 0.75 : 1,
+              }}
+            >
+              {/* Inactive Badge */}
+              {isInactive && (
+                <span
+                  style={{
+                    position: 'absolute',
+                    top: '12px',
+                    right: '12px',
+                    background: '#e53935',
+                    color: '#fff',
+                    padding: '0.25rem 0.6rem',
+                    borderRadius: '4px',
+                    fontSize: '0.75rem',
+                    fontWeight: 'bold',
+                    zIndex: 2,
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Inactive
+                </span>
+              )}
+
               <div>
                 <img
                   src={imageUrl}
@@ -39,11 +75,13 @@ function ProductList() {
                   style={{ width: '100%', height: '180px', objectFit: 'cover', borderRadius: '8px', marginBottom: '1rem' }}
                   onError={(e) => { e.target.src = 'https://via.placeholder.com/300x200?text=No+Image'; }}
                 />
-                <h3 style={{ marginTop: 0, color: '#646cff', textAlign: 'center' }}>{item.name}</h3>
+                <h3 style={{ marginTop: 0, color: isInactive ? '#aaa' : '#646cff', textAlign: 'center' }}>{item.name}</h3>
                 <p style={{ color: '#aaa', fontSize: '0.9rem', textAlign: 'center' }}>{item.description}</p>
               </div>
               <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <strong style={{ fontSize: '1.2rem', color: '#4caf50' }}>RM {item.price}</strong>
+                <strong style={{ fontSize: '1.2rem', color: isInactive ? '#888' : '#4caf50' }}>
+                  RM {parseFloat(item.price).toFixed(2)}
+                </strong>
                 <span style={{ fontSize: '0.8rem', color: '#888' }}>Stock: {item.stock}</span>
               </div>
             </div>
