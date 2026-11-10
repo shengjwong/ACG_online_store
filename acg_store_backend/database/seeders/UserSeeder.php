@@ -14,7 +14,7 @@ class UserSeeder extends Seeder
         User::updateOrCreate(
             ['email' => 'admin@acgstore.com'],
             [
-                'name' => 'Sheng Jie (Admin)',
+                'name' => 'Sheng Jie',
                 'password' => Hash::make('password123'),
                 'role' => 'admin',
                 'phone_number' => '+60123456789',
