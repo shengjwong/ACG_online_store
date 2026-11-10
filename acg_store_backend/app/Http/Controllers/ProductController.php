@@ -11,11 +11,18 @@ use Illuminate\Support\Facades\Storage;
 class ProductController extends Controller
 {
     /**
-     * Display a listing of active products (Public/User View).
+     * Display a listing of products.
+     * Shows all products by default (for Admin), or filters by status if requested.
      */
     public function index(Request $request)
     {
-        $query = Product::with('category')->where('status', 'active');
+        $query = Product::with('category');
+
+        // Allow filtering by status (e.g. ?status=active for shop view)
+        // If no status is specified, return all items so Admin panel shows inactive products too
+        if ($request->has('status')) {
+            $query->where('status', $request->status);
+        }
 
         // Optional filtering by category
         if ($request->has('category_id')) {
