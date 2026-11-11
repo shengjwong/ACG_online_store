@@ -1,0 +1,231 @@
+/* ==========================================================================
+   ADMIN DASHBOARD CONTAINER & TYPOGRAPHY
+   ========================================================================== */
+.admin-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  color: #fff;
+}
+
+.admin-title {
+  color: #646cff;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.admin-error-box {
+  background: rgba(229, 57, 53, 0.2);
+  border: 1px solid #e53935;
+  color: #ff6b6b;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+}
+
+.admin-loading {
+  padding: 2rem;
+  color: #fff;
+  text-align: center;
+}
+
+/* ==========================================================================
+   TABS & NAVIGATION
+   ========================================================================== */
+.admin-tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  justify-content: center;
+}
+
+.tab-btn {
+  padding: 0.6rem 1.5rem;
+  background: #2a2a2a;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s ease;
+}
+
+.tab-btn.active-products {
+  background: #646cff;
+}
+
+.tab-btn.active-users {
+  background: #ff9800;
+}
+
+/* ==========================================================================
+   FORM CONTROLS & LAYOUT
+   ========================================================================== */
+.admin-card {
+  background: #1e1e1e;
+  padding: 1.5rem;
+  border-radius: 10px;
+  margin-bottom: 2rem;
+  border: 1px solid #333;
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-full-width {
+  grid-column: span 2;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.85rem;
+  color: #ccc;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #2a2a2a;
+  color: #fff;
+  font-size: 0.9rem;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: #646cff;
+}
+
+.phone-input-group {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.phone-country-select {
+  width: 110px;
+  cursor: pointer;
+  padding-right: 0.2rem;
+}
+
+.phone-local-input {
+  flex: 1;
+}
+
+.form-actions {
+  grid-column: span 2;
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+/* Form Action Buttons */
+.btn-submit {
+  padding: 0.75rem 1.5rem;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-submit.create {
+  background: #4caf50;
+}
+
+.btn-submit.update {
+  background: #ff9800;
+}
+
+.btn-cancel {
+  padding: 0.75rem 1.5rem;
+  background: #757575;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   TABLES & BADGES
+   ========================================================================== */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #1e1e1e;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.admin-table th {
+  background: #2a2a2a;
+  text-align: left;
+  border-bottom: 1px solid #444;
+  padding: 1rem;
+}
+
+.admin-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #333;
+}
+
+.table-img-thumb {
+  width: 50px;
+  height: 50px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.table-avatar-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.badge-status {
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.badge-status.active {
+  background: #4caf50;
+}
+
+.badge-status.inactive {
+  background: #e53935;
+}
+
+.badge-role-admin {
+  background: #ff9800;
+}
+
+.badge-role-member {
+  background: #444;
+}
+
+.table-action-btn {
+  padding: 0.4rem 0.8rem;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.table-action-btn.edit {
+  background: #ff9800;
+  margin-right: 0.5rem;
+}
+
+.table-action-btn.delete {
+  background: #e53935;
+}

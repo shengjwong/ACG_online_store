@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api/axios';
+import '../styles/Auth.css';
 
 function Login({ onLoginSuccess }) {
   const [email, setEmail] = useState('');
@@ -27,37 +28,50 @@ function Login({ onLoginSuccess }) {
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '4rem auto', padding: '2rem', background: '#1e1e1e', borderRadius: '10px', color: '#fff' }}>
-      <h2>Login to ACG Store</h2>
-      {error && <div style={{ background: '#e53935', padding: '0.5rem', borderRadius: '4px', marginBottom: '1rem' }}>{error}</div>}
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '1rem' }}>
-          <label style={{ display: 'block', marginBottom: '0.5rem' }}>Email Address</label>
-          <input 
-            type="email" 
-            required 
-            value={email} 
-            onChange={(e) => setEmail(e.target.value)} 
-            style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #444', background: '#2a2a2a', color: '#fff' }}
-          />
-        </div>
-        <div style={{ marginBottom: '1.5rem' }}>
-          <label style={{ display: 'block', marginBottom: '0.5rem' }}>Password</label>
-          <input 
-            type="password" 
-            required 
-            value={password} 
-            onChange={(e) => setPassword(e.target.value)} 
-            style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #444', background: '#2a2a2a', color: '#fff' }}
-          />
-        </div>
-        <button type="submit" style={{ width: '100%', padding: '0.75rem', background: '#646cff', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
-          Log In
-        </button>
-      </form>
-      <p style={{ marginTop: '1rem', textAlign: 'center', color: '#aaa' }}>
-        Don't have an account? <Link to="/signup" style={{ color: '#646cff' }}>Sign up</Link>
-      </p>
+    <div className="auth-page-wrapper">
+      <div className="auth-container">
+        <h2 className="auth-title">Login to ACG Store</h2>
+        
+        {error && <div className="auth-error-box">{error}</div>}
+        
+        <form onSubmit={handleSubmit}>
+          <div className="auth-form-group">
+            <label className="auth-label">Email Address</label>
+            <input 
+              type="email" 
+              required 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+              className="auth-input"
+              placeholder="name@example.com"
+            />
+          </div>
+
+          <div className="auth-form-group">
+            <label className="auth-label">Password</label>
+            <input 
+              type="password" 
+              required 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+              className="auth-input"
+              placeholder="••••••••"
+            />
+          </div>
+
+          <button type="submit" className="auth-submit-btn">
+            Log In
+          </button>
+        </form>
+
+        <p className="auth-footer-text">
+          Don't have an account? <Link to="/signup" className="auth-link">Sign up</Link>
+        </p>
+
+        <p className="auth-footer-text" style={{ marginTop: '0.5rem' }}>
+          <Link to="/forgot-password" className="auth-link">Forgot password?</Link>
+        </p>
+      </div>
     </div>
   );
 }

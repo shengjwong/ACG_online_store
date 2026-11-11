@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
 import { COUNTRY_CODES } from '../utils/countryCodes';
+import '../styles/AdminDashboard.css'; 
 
 function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('products');
@@ -187,57 +188,25 @@ function AdminDashboard() {
     }
   };
 
-  const inputStyle = {
-    width: '100%',
-    padding: '0.55rem 0.75rem',
-    borderRadius: '6px',
-    border: '1px solid #444',
-    background: '#2a2a2a',
-    color: '#fff',
-    fontSize: '0.9rem',
-    boxSizing: 'border-box',
-    outline: 'none',
-  };
-
-  if (loading) return <h2 style={{ padding: '2rem', color: '#fff', textAlign: 'center' }}>Loading Admin Panel...</h2>;
+  if (loading) return <h2 className="admin-loading">Loading Admin Panel...</h2>;
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto', color: '#fff' }}>
-      <h1 style={{ color: '#646cff', textAlign: 'center', marginBottom: '1.5rem' }}>Admin Control Center</h1>
+    <div className="admin-container">
+      <h1 className="admin-title">Admin Control Center</h1>
 
-      {error && (
-        <div style={{ background: 'rgba(229, 57, 53, 0.2)', border: '1px solid #e53935', color: '#ff6b6b', padding: '0.75rem', borderRadius: '6px', marginBottom: '1.5rem' }}>
-          {error}
-        </div>
-      )}
+      {error && <div className="admin-error-box">{error}</div>}
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', justifyContent: 'center' }}>
+      <div className="admin-tabs">
         <button
           onClick={() => setActiveTab('products')}
-          style={{
-            padding: '0.6rem 1.5rem',
-            background: activeTab === 'products' ? '#646cff' : '#2a2a2a',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontWeight: 'bold',
-          }}
+          className={`tab-btn ${activeTab === 'products' ? 'active-products' : ''}`}
         >
           Manage Products
         </button>
         <button
           onClick={() => setActiveTab('users')}
-          style={{
-            padding: '0.6rem 1.5rem',
-            background: activeTab === 'users' ? '#ff9800' : '#2a2a2a',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontWeight: 'bold',
-          }}
+          className={`tab-btn ${activeTab === 'users' ? 'active-users' : ''}`}
         >
           Manage Users & Admins
         </button>
@@ -246,30 +215,30 @@ function AdminDashboard() {
       {/* PRODUCTS TAB */}
       {activeTab === 'products' && (
         <div>
-          <div style={{ background: '#1e1e1e', padding: '1.5rem', borderRadius: '10px', marginBottom: '2rem', border: '1px solid #333' }}>
+          <div className="admin-card">
             <h2 style={{ marginBottom: '1.2rem' }}>{productEditingId ? 'Edit Product' : 'Add New Product'}</h2>
-            <form onSubmit={handleProductSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div style={{ gridColumn: 'span 2' }}>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#ccc' }}>Product Name</label>
+            <form onSubmit={handleProductSubmit} className="admin-form-grid">
+              <div className="form-full-width">
+                <label className="form-label">Product Name</label>
                 <input
                   type="text"
                   required
                   value={productForm.name}
                   onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
-                  style={inputStyle}
+                  className="form-input"
                 />
               </div>
-              <div style={{ gridColumn: 'span 2' }}>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#ccc' }}>Description</label>
+              <div className="form-full-width">
+                <label className="form-label">Description</label>
                 <textarea
                   rows="3"
                   value={productForm.description}
                   onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
-                  style={inputStyle}
+                  className="form-input"
                 />
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#ccc' }}>Price (MYR)</label>
+                <label className="form-label">Price (MYR)</label>
                 <input
                   type="number"
                   step="0.01"
@@ -278,11 +247,11 @@ function AdminDashboard() {
                   required
                   value={productForm.price}
                   onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
-                  style={inputStyle}
+                  className="form-input"
                 />
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#ccc' }}>Stock Quantity</label>
+                <label className="form-label">Stock Quantity</label>
                 <input
                   type="number"
                   min="0"
@@ -290,35 +259,35 @@ function AdminDashboard() {
                   required
                   value={productForm.stock}
                   onChange={(e) => setProductForm({ ...productForm, stock: e.target.value })}
-                  style={inputStyle}
+                  className="form-input"
                 />
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#ccc' }}>Image</label>
+                <label className="form-label">Image</label>
                 <input
                   type="file"
                   accept="image/*"
                   onChange={(e) => setProductImageFile(e.target.files[0])}
-                  style={inputStyle}
+                  className="form-input"
                 />
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#ccc' }}>Status</label>
+                <label className="form-label">Status</label>
                 <select
                   value={productForm.status}
                   onChange={(e) => setProductForm({ ...productForm, status: e.target.value })}
-                  style={inputStyle}
+                  className="form-input"
                 >
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
                 </select>
               </div>
-              <div style={{ gridColumn: 'span 2', display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
-                <button type="submit" style={{ padding: '0.75rem 1.5rem', background: productEditingId ? '#ff9800' : '#4caf50', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
+              <div className="form-actions">
+                <button type="submit" className={`btn-submit ${productEditingId ? 'update' : 'create'}`}>
                   {productEditingId ? 'Update Product' : 'Add Product'}
                 </button>
                 {productEditingId && (
-                  <button type="button" onClick={resetProductForm} style={{ padding: '0.75rem 1.5rem', background: '#757575', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>
+                  <button type="button" onClick={resetProductForm} className="btn-cancel">
                     Cancel
                   </button>
                 )}
@@ -327,16 +296,16 @@ function AdminDashboard() {
           </div>
 
           <h2>Inventory Items</h2>
-          <table style={{ width: '100%', borderCollapse: 'collapse', background: '#1e1e1e', borderRadius: '8px', overflow: 'hidden' }}>
+          <table className="admin-table">
             <thead>
-              <tr style={{ background: '#2a2a2a', textAlign: 'left', borderBottom: '1px solid #444' }}>
-                <th style={{ padding: '1rem' }}>ID</th>
-                <th style={{ padding: '1rem' }}>Image</th>
-                <th style={{ padding: '1rem' }}>Name</th>
-                <th style={{ padding: '1rem' }}>Price</th>
-                <th style={{ padding: '1rem' }}>Stock</th>
-                <th style={{ padding: '1rem' }}>Status</th>
-                <th style={{ padding: '1rem', textAlign: 'right' }}>Actions</th>
+              <tr>
+                <th>ID</th>
+                <th>Image</th>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Status</th>
+                <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -346,44 +315,37 @@ function AdminDashboard() {
                   : 'https://via.placeholder.com/50?text=No+Img';
 
                 return (
-                  <tr key={item.id} style={{ borderBottom: '1px solid #333' }}>
-                    <td style={{ padding: '1rem' }}>{item.id}</td>
-                    <td style={{ padding: '1rem' }}>
+                  <tr key={item.id}>
+                    <td>{item.id}</td>
+                    <td>
                       <img
                         src={imageUrl}
                         alt={item.name}
-                        style={{ width: '50px', height: '50px', borderRadius: '6px', objectFit: 'cover' }}
+                        className="table-img-thumb"
                         onError={(e) => { e.target.src = 'https://via.placeholder.com/50?text=No+Img'; }}
                       />
                     </td>
-                    <td style={{ padding: '1rem', fontWeight: 'bold' }}>{item.name}</td>
-                    <td style={{ padding: '1rem', color: '#4caf50' }}>RM {item.price}</td>
-                    <td style={{ padding: '1rem' }}>{item.stock}</td>
-                    <td style={{ padding: '1rem' }}>
-                      <span
-                        style={{
-                          padding: '0.2rem 0.6rem',
-                          borderRadius: '4px',
-                          fontSize: '0.85rem',
-                          fontWeight: 'bold',
-                          background: item.status === 'active' ? '#4caf50' : '#e53935',
-                          color: '#fff',
-                        }}
-                      >
+                    <td style={{ fontWeight: 'bold' }}>{item.name}</td>
+                    <td style={{ color: '#4caf50' }}>RM {item.price}</td>
+                    <td>{item.stock}</td>
+                    <td>
+                      <span className={`badge-status ${item.status === 'active' ? 'active' : 'inactive'}`}>
                         {item.status}
                       </span>
                     </td>
-                    <td style={{ padding: '1rem', textAlign: 'right' }}>
+                    <td style={{ textAlign: 'right' }}>
                       <button
                         onClick={() => {
                           setProductEditingId(item.id);
                           setProductForm({ name: item.name, description: item.description || '', price: item.price, stock: item.stock, category_id: item.category_id || 1, status: item.status || 'active' });
                         }}
-                        style={{ padding: '0.4rem 0.8rem', background: '#ff9800', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '0.5rem' }}
+                        className="table-action-btn edit"
                       >
                         Edit
                       </button>
-                      <button onClick={() => handleProductDelete(item.id)} style={{ padding: '0.4rem 0.8rem', background: '#e53935', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Delete</button>
+                      <button onClick={() => handleProductDelete(item.id)} className="table-action-btn delete">
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 );
@@ -396,33 +358,33 @@ function AdminDashboard() {
       {/* USERS TAB */}
       {activeTab === 'users' && (
         <div>
-          <div style={{ background: '#1e1e1e', padding: '1.5rem', borderRadius: '10px', marginBottom: '2rem', border: '1px solid #333' }}>
+          <div className="admin-card">
             <h2 style={{ marginBottom: '1.2rem' }}>{userEditingId ? 'Edit User Account' : 'Create New User / Admin'}</h2>
-            <form onSubmit={handleUserSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <form onSubmit={handleUserSubmit} className="admin-form-grid">
               <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#ccc' }}>Full Name</label>
+                <label className="form-label">Full Name</label>
                 <input
                   type="text"
                   required
                   value={userForm.name}
                   onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
-                  style={inputStyle}
+                  className="form-input"
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#ccc' }}>Email Address</label>
+                <label className="form-label">Email Address</label>
                 <input
                   type="email"
                   required
                   value={userForm.email}
                   onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
-                  style={inputStyle}
+                  className="form-input"
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#ccc' }}>
+                <label className="form-label">
                   {userEditingId ? 'Password (Min 8 chars, leave blank to keep)' : 'Password (Min 8 chars)'}
                 </label>
                 <input
@@ -430,23 +392,18 @@ function AdminDashboard() {
                   required={!userEditingId}
                   value={userForm.password}
                   onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
-                  style={inputStyle}
+                  className="form-input"
                 />
               </div>
 
-              {/* Compact Country Code + Phone Input */}
+              {/* Country Code + Phone Input */}
               <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#ccc' }}>Phone Number</label>
-                <div style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
+                <label className="form-label">Phone Number</label>
+                <div className="phone-input-group">
                   <select
                     value={countryCode}
                     onChange={(e) => setCountryCode(e.target.value)}
-                    style={{
-                      ...inputStyle,
-                      width: '110px',
-                      cursor: 'pointer',
-                      paddingRight: '0.2rem',
-                    }}
+                    className="form-input phone-country-select"
                   >
                     {COUNTRY_CODES.map((c) => (
                       <option key={c.code} value={c.code} style={{ background: '#1e1e1e', color: '#fff' }}>
@@ -459,13 +416,13 @@ function AdminDashboard() {
                     placeholder="123456789"
                     value={localPhone}
                     onChange={(e) => setLocalPhone(e.target.value.replace(/\D/g, ''))}
-                    style={{ ...inputStyle, flex: 1 }}
+                    className="form-input phone-local-input"
                   />
                 </div>
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#ccc' }}>Profile Image</label>
+                <label className="form-label">Profile Image</label>
                 <input
                   type="file"
                   accept="image/*"
@@ -474,28 +431,28 @@ function AdminDashboard() {
                       setProfileImageFile(e.target.files[0]);
                     }
                   }}
-                  style={inputStyle}
+                  className="form-input"
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#ccc' }}>Account Role</label>
+                <label className="form-label">Account Role</label>
                 <select
                   value={userForm.role}
                   onChange={(e) => setUserForm({ ...userForm, role: e.target.value })}
-                  style={inputStyle}
+                  className="form-input"
                 >
                   <option value="member">Member</option>
                   <option value="admin">Admin</option>
                 </select>
               </div>
 
-              <div style={{ gridColumn: 'span 2', display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
-                <button type="submit" style={{ padding: '0.75rem 1.5rem', background: userEditingId ? '#ff9800' : '#4caf50', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
+              <div className="form-actions">
+                <button type="submit" className={`btn-submit ${userEditingId ? 'update' : 'create'}`}>
                   {userEditingId ? 'Update Account' : 'Create Account'}
                 </button>
                 {userEditingId && (
-                  <button type="button" onClick={resetUserForm} style={{ padding: '0.75rem 1.5rem', background: '#757575', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>
+                  <button type="button" onClick={resetUserForm} className="btn-cancel">
                     Cancel
                   </button>
                 )}
@@ -504,15 +461,15 @@ function AdminDashboard() {
           </div>
 
           <h2>Registered Accounts</h2>
-          <table style={{ width: '100%', borderCollapse: 'collapse', background: '#1e1e1e', borderRadius: '8px', overflow: 'hidden' }}>
+          <table className="admin-table">
             <thead>
-              <tr style={{ background: '#2a2a2a', textAlign: 'left', borderBottom: '1px solid #444' }}>
-                <th style={{ padding: '1rem' }}>Avatar</th>
-                <th style={{ padding: '1rem' }}>Name</th>
-                <th style={{ padding: '1rem' }}>Email</th>
-                <th style={{ padding: '1rem' }}>Phone</th>
-                <th style={{ padding: '1rem' }}>Role</th>
-                <th style={{ padding: '1rem', textAlign: 'right' }}>Actions</th>
+              <tr>
+                <th>Avatar</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Role</th>
+                <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -522,34 +479,28 @@ function AdminDashboard() {
                   : 'https://via.placeholder.com/40?text=U';
 
                 return (
-                  <tr key={u.id} style={{ borderBottom: '1px solid #333' }}>
-                    <td style={{ padding: '1rem' }}>
+                  <tr key={u.id}>
+                    <td>
                       <img
                         src={avatarUrl}
                         alt={u.name}
-                        style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }}
+                        className="table-avatar-thumb"
                         onError={(e) => { e.target.src = 'https://via.placeholder.com/40?text=U'; }}
                       />
                     </td>
-                    <td style={{ padding: '1rem', fontWeight: 'bold' }}>{u.name}</td>
-                    <td style={{ padding: '1rem', color: '#aaa' }}>{u.email}</td>
-                    <td style={{ padding: '1rem', color: '#aaa' }}>{u.phone_number || '-'}</td>
-                    <td style={{ padding: '1rem' }}>
-                      <span style={{ padding: '0.2rem 0.6rem', borderRadius: '4px', fontSize: '0.85rem', fontWeight: 'bold', background: u.role === 'admin' ? '#ff9800' : '#444', color: '#fff' }}>
+                    <td style={{ fontWeight: 'bold' }}>{u.name}</td>
+                    <td style={{ color: '#aaa' }}>{u.email}</td>
+                    <td style={{ color: '#aaa' }}>{u.phone_number || '-'}</td>
+                    <td>
+                      <span className={`badge-status ${u.role === 'admin' ? 'badge-role-admin' : 'badge-role-member'}`}>
                         {u.role}
                       </span>
                     </td>
-                    <td style={{ padding: '1rem', textAlign: 'right' }}>
-                      <button
-                        onClick={() => handleUserEdit(u)}
-                        style={{ padding: '0.4rem 0.8rem', background: '#ff9800', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '0.5rem' }}
-                      >
+                    <td style={{ textAlign: 'right' }}>
+                      <button onClick={() => handleUserEdit(u)} className="table-action-btn edit">
                         Edit
                       </button>
-                      <button
-                        onClick={() => handleUserDelete(u.id)}
-                        style={{ padding: '0.4rem 0.8rem', background: '#e53935', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                      >
+                      <button onClick={() => handleUserDelete(u.id)} className="table-action-btn delete">
                         Delete
                       </button>
                     </td>
