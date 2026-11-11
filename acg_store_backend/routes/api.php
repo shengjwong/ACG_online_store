@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
+use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\NewPasswordController;
 
 // Public Authentication Routes
 Route::post('/register', function (Request $request) {$request->validate([
@@ -83,3 +85,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/products/{product}', [ProductController::class, 'update']);
     Route::delete('/products/{product}', [ProductController::class, 'destroy']);
 });
+
+Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])
+    ->name('password.email');
+
+Route::post('/reset-password', [NewPasswordController::class, 'store'])
+    ->name('password.store');

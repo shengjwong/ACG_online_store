@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
@@ -10,30 +11,35 @@ use Illuminate\Validation\ValidationException;
 
 class PasswordResetLinkController extends Controller
 {
-    /**
-     * Handle an incoming password reset link request.
-     *
-     * @throws ValidationException
-     */
     public function store(Request $request): JsonResponse
     {
         $request->validate([
             'email' => ['required', 'email'],
         ]);
 
-        // We will send the password reset link to this user. Once we have attempted
-        // to send the link, we will examine the response then see the message we
-        // need to show to the user. Finally, we'll send out a proper response.
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
+        $email = trim(strtolower($request->email));
 
-        if ($status != Password::RESET_LINK_SENT) {
+        // Check if user exists in your database
+        $user = User::where('email', $email)->first();
+
+        if (!$user) {
             throw ValidationException::withMessages([
-                'email' => [__($status)],
+                'email' => ["We can't find a user with that email address."],
             ]);
         }
 
-        return response()->json(['status' => __($status)]);
+        // Send reset link token using Laravel broker
+        $status = Password::broker()->sendResetLink(['email' => $email]);
+
+        if ($status === Password::RESET_LINK_SENT) {
+            return response()->json([
+                'status' => __($status),
+                'message' => 'Reset link sent to your email. (Expires in 1 minute)'
+            ]);
+        }
+
+        throw ValidationException::withMessages([
+            'email' => [__($status)],
+        ]);
     }
 }
