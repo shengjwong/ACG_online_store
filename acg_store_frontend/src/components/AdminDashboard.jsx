@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
 import { COUNTRY_CODES } from '../utils/countryCodes';
-import '../styles/AdminDashboard.css'; 
+import '../styles/AdminDashboard.css';
 
 function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('products');
   const [products, setProducts] = useState([]);
   const [users, setUsers] = useState([]);
+  const [productSearch, setProductSearch] = useState('');
+  const [userSearch, setUserSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -51,6 +53,35 @@ function AdminDashboard() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // --- FILTERED & SORTED LISTS ---
+  const filteredProducts = products
+    .filter((item) => {
+      const q = productSearch.toLowerCase().trim();
+      const displayStatus = item.status === 'inactive' ? 'unavailable' : item.status;
+      return (
+        String(item.id).includes(q) ||
+        item.name?.toLowerCase().includes(q) ||
+        item.description?.toLowerCase().includes(q) ||
+        displayStatus?.toLowerCase().includes(q)
+      );
+    })
+    .sort((a, b) => {
+      const aInactive = a.status === 'inactive' ? 1 : 0;
+      const bInactive = b.status === 'inactive' ? 1 : 0;
+      return aInactive - bInactive;
+    });
+
+  const filteredUsers = users.filter((u) => {
+    const q = userSearch.toLowerCase().trim();
+    return (
+      String(u.id).includes(q) ||
+      u.name?.toLowerCase().includes(q) ||
+      u.email?.toLowerCase().includes(q) ||
+      u.phone_number?.toLowerCase().includes(q) ||
+      u.role?.toLowerCase().includes(q)
+    );
+  });
 
   // --- PRODUCT HANDLERS ---
   const resetProductForm = () => {
@@ -279,7 +310,7 @@ function AdminDashboard() {
                   className="form-input"
                 >
                   <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
+                  <option value="inactive">Unavailable</option>
                 </select>
               </div>
               <div className="form-actions">
@@ -295,7 +326,29 @@ function AdminDashboard() {
             </form>
           </div>
 
-          <h2>Inventory Items</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
+            <h2 style={{ margin: 0 }}>Inventory Items</h2>
+            <div className="search-bar-wrapper" style={{ margin: 0, maxWidth: '360px' }}>
+              <input
+                type="text"
+                className="search-input"
+                placeholder="Search products by ID, name, or status..."
+                value={productSearch}
+                onChange={(e) => setProductSearch(e.target.value)}
+              />
+              {productSearch && (
+                <button
+                  type="button"
+                  className="search-clear-btn"
+                  onClick={() => setProductSearch('')}
+                  title="Clear search"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
+
           <table className="admin-table">
             <thead>
               <tr>
@@ -309,47 +362,55 @@ function AdminDashboard() {
               </tr>
             </thead>
             <tbody>
-              {products.map((item) => {
-                const imageUrl = item.image
-                  ? `http://127.0.0.1:8000/storage/${item.image}`
-                  : 'https://via.placeholder.com/50?text=No+Img';
+              {filteredProducts.length === 0 ? (
+                <tr>
+                  <td colSpan="7" style={{ textAlign: 'center', color: '#94A3B8', padding: '1.5rem' }}>
+                    No products found matching "<strong>{productSearch}</strong>".
+                  </td>
+                </tr>
+              ) : (
+                filteredProducts.map((item) => {
+                  const imageUrl = item.image
+                    ? `http://127.0.0.1:8000/storage/${item.image}`
+                    : 'https://via.placeholder.com/50?text=No+Img';
 
-                return (
-                  <tr key={item.id}>
-                    <td>{item.id}</td>
-                    <td>
-                      <img
-                        src={imageUrl}
-                        alt={item.name}
-                        className="table-img-thumb"
-                        onError={(e) => { e.target.src = 'https://via.placeholder.com/50?text=No+Img'; }}
-                      />
-                    </td>
-                    <td style={{ fontWeight: 'bold' }}>{item.name}</td>
-                    <td style={{ color: '#4caf50' }}>RM {item.price}</td>
-                    <td>{item.stock}</td>
-                    <td>
-                      <span className={`badge-status ${item.status === 'active' ? 'active' : 'inactive'}`}>
-                        {item.status}
-                      </span>
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <button
-                        onClick={() => {
-                          setProductEditingId(item.id);
-                          setProductForm({ name: item.name, description: item.description || '', price: item.price, stock: item.stock, category_id: item.category_id || 1, status: item.status || 'active' });
-                        }}
-                        className="table-action-btn edit"
-                      >
-                        Edit
-                      </button>
-                      <button onClick={() => handleProductDelete(item.id)} className="table-action-btn delete">
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+                  return (
+                    <tr key={item.id}>
+                      <td>{item.id}</td>
+                      <td>
+                        <img
+                          src={imageUrl}
+                          alt={item.name}
+                          className="table-img-thumb"
+                          onError={(e) => { e.target.src = 'https://via.placeholder.com/50?text=No+Img'; }}
+                        />
+                      </td>
+                      <td style={{ fontWeight: 'bold' }}>{item.name}</td>
+                      <td style={{ color: '#4caf50', whiteSpace: 'nowrap' }}>RM {item.price}</td>
+                      <td>{item.stock}</td>
+                      <td>
+                        <span className={`badge-status ${item.status === 'active' ? 'active' : 'inactive'}`}>
+                          {item.status === 'inactive' ? 'unavailable' : item.status}
+                        </span>
+                      </td>
+                      <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                        <button
+                          onClick={() => {
+                            setProductEditingId(item.id);
+                            setProductForm({ name: item.name, description: item.description || '', price: item.price, stock: item.stock, category_id: item.category_id || 1, status: item.status || 'active' });
+                          }}
+                          className="table-action-btn edit"
+                        >
+                          Edit
+                        </button>
+                        <button onClick={() => handleProductDelete(item.id)} className="table-action-btn delete">
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
@@ -460,7 +521,29 @@ function AdminDashboard() {
             </form>
           </div>
 
-          <h2>Registered Accounts</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
+            <h2 style={{ margin: 0 }}>Registered Accounts</h2>
+            <div className="search-bar-wrapper" style={{ margin: 0, maxWidth: '360px' }}>
+              <input
+                type="text"
+                className="search-input"
+                placeholder="Search by name, email, phone, or role..."
+                value={userSearch}
+                onChange={(e) => setUserSearch(e.target.value)}
+              />
+              {userSearch && (
+                <button
+                  type="button"
+                  className="search-clear-btn"
+                  onClick={() => setUserSearch('')}
+                  title="Clear search"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
+
           <table className="admin-table">
             <thead>
               <tr>
@@ -473,40 +556,48 @@ function AdminDashboard() {
               </tr>
             </thead>
             <tbody>
-              {users.map((u) => {
-                const avatarUrl = u.profile_image && u.profile_image !== 'default.png'
-                  ? `http://127.0.0.1:8000/storage/${u.profile_image}`
-                  : 'https://via.placeholder.com/40?text=U';
+              {filteredUsers.length === 0 ? (
+                <tr>
+                  <td colSpan="6" style={{ textAlign: 'center', color: '#94A3B8', padding: '1.5rem' }}>
+                    No accounts found matching "<strong>{userSearch}</strong>".
+                  </td>
+                </tr>
+              ) : (
+                filteredUsers.map((u) => {
+                  const avatarUrl = u.profile_image && u.profile_image !== 'default.png'
+                    ? `http://127.0.0.1:8000/storage/${u.profile_image}`
+                    : 'https://via.placeholder.com/40?text=U';
 
-                return (
-                  <tr key={u.id}>
-                    <td>
-                      <img
-                        src={avatarUrl}
-                        alt={u.name}
-                        className="table-avatar-thumb"
-                        onError={(e) => { e.target.src = 'https://via.placeholder.com/40?text=U'; }}
-                      />
-                    </td>
-                    <td style={{ fontWeight: 'bold' }}>{u.name}</td>
-                    <td style={{ color: '#aaa' }}>{u.email}</td>
-                    <td style={{ color: '#aaa' }}>{u.phone_number || '-'}</td>
-                    <td>
-                      <span className={`badge-status ${u.role === 'admin' ? 'badge-role-admin' : 'badge-role-member'}`}>
-                        {u.role}
-                      </span>
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <button onClick={() => handleUserEdit(u)} className="table-action-btn edit">
-                        Edit
-                      </button>
-                      <button onClick={() => handleUserDelete(u.id)} className="table-action-btn delete">
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+                  return (
+                    <tr key={u.id}>
+                      <td>
+                        <img
+                          src={avatarUrl}
+                          alt={u.name}
+                          className="table-avatar-thumb"
+                          onError={(e) => { e.target.src = 'https://via.placeholder.com/40?text=U'; }}
+                        />
+                      </td>
+                      <td style={{ fontWeight: 'bold' }}>{u.name}</td>
+                      <td style={{ color: '#aaa' }}>{u.email}</td>
+                      <td style={{ color: '#aaa' }}>{u.phone_number || '-'}</td>
+                      <td>
+                        <span className={`badge-status ${u.role === 'admin' ? 'badge-role-admin' : 'badge-role-member'}`}>
+                          {u.role}
+                        </span>
+                      </td>
+                      <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                        <button onClick={() => handleUserEdit(u)} className="table-action-btn edit">
+                          Edit
+                        </button>
+                        <button onClick={() => handleUserDelete(u.id)} className="table-action-btn delete">
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>

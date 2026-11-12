@@ -19,6 +19,7 @@ import './styles/App.css';
 
 function ProductList() {
   const [products, setProducts] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState('');
   const navigate = useNavigate();
@@ -43,6 +44,20 @@ function ProductList() {
       .catch(() => setLoading(false));
   }, []);
 
+  const filteredProducts = products
+    .filter((item) => {
+      const query = searchQuery.toLowerCase().trim();
+      return (
+        item.name?.toLowerCase().includes(query) ||
+        item.description?.toLowerCase().includes(query)
+      );
+    })
+    .sort((a, b) => {
+      const aInactive = a.status === 'inactive' ? 1 : 0;
+      const bInactive = b.status === 'inactive' ? 1 : 0;
+      return aInactive - bInactive;
+    });
+
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
@@ -59,58 +74,85 @@ function ProductList() {
         <div className="catalog-divider"></div>
       </div>
 
-      <div className="product-grid">
-        {products.map((item) => {
-          const imageUrl = item.image
-            ? `http://127.0.0.1:8000/storage/${item.image}`
-            : 'https://via.placeholder.com/300x200?text=No+Image';
+      {/* Product Search Bar */}
+      <div className="search-bar-wrapper">
+        <input
+          type="text"
+          className="search-input"
+          placeholder="Search products by name or description..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        {searchQuery && (
+          <button
+            type="button"
+            className="search-clear-btn"
+            onClick={() => setSearchQuery('')}
+            title="Clear search"
+          >
+            ✕
+          </button>
+        )}
+      </div>
 
-          const isInactive = item.status === 'inactive';
+      {filteredProducts.length === 0 ? (
+        <p style={{ textAlign: 'center', color: '#94A3B8', marginTop: '2rem' }}>
+          No products found matching "<strong>{searchQuery}</strong>".
+        </p>
+      ) : (
+        <div className="product-grid">
+          {filteredProducts.map((item) => {
+            const imageUrl = item.image
+              ? `http://127.0.0.1:8000/storage/${item.image}`
+              : 'https://via.placeholder.com/300x200?text=No+Image';
 
-          return (
-            <div key={item.id} className={`product-card ${isInactive ? 'inactive' : ''}`}>
-              {isInactive && <span className="inactive-badge">Inactive</span>}
+            const isInactive = item.status === 'inactive';
 
-              <div>
-                <div className="product-image-container">
-                  <img
-                    src={imageUrl}
-                    alt={item.name}
-                    className={`product-image ${isInactive ? 'inactive-img' : ''}`}
-                    onError={(e) => { e.target.src = 'https://via.placeholder.com/300x200?text=No+Image'; }}
-                  />
+            return (
+              <div key={item.id} className={`product-card ${isInactive ? 'inactive' : ''}`}>
+                {isInactive && <span className="inactive-badge">Unavailable</span>}
+
+                <div>
+                  <div className="product-image-container">
+                    <img
+                      src={imageUrl}
+                      alt={item.name}
+                      className={`product-image ${isInactive ? 'inactive-img' : ''}`}
+                      onError={(e) => { e.target.src = 'https://via.placeholder.com/300x200?text=No+Image'; }}
+                    />
+                  </div>
+
+                  <h3 className={`product-name ${isInactive ? 'inactive-text' : ''}`}>
+                    {item.name}
+                  </h3>
+                  
+                  <p className="product-desc">
+                    {item.description || 'No description available.'}
+                  </p>
                 </div>
 
-                <h3 className={`product-name ${isInactive ? 'inactive-text' : ''}`}>
-                  {item.name}
-                </h3>
-                
-                <p className="product-desc">
-                  {item.description || 'No description available.'}
-                </p>
-              </div>
+                <div className="product-footer">
+                  <strong className={`product-price ${isInactive ? 'inactive-price' : ''}`}>
+                    <span className="currency-symbol">RM</span>
+                    {parseFloat(item.price).toFixed(2)}
+                  </strong>
+                  <span className="stock-tag">
+                    Stock: <strong>{item.stock}</strong>
+                  </span>
+                </div>
 
-              <div className="product-footer">
-                <strong className={`product-price ${isInactive ? 'inactive-price' : ''}`}>
-                  <span className="currency-symbol">RM</span>
-                  {parseFloat(item.price).toFixed(2)}
-                </strong>
-                <span className="stock-tag">
-                  Stock: <strong>{item.stock}</strong>
-                </span>
+                <button
+                  className="btn-add-cart"
+                  disabled={isInactive || item.stock < 1}
+                  onClick={() => handleAddToCart(item)}
+                >
+                  {item.stock < 1 ? 'Out of stock' : 'Add to Cart'}
+                </button>
               </div>
-
-              <button
-                className="btn-add-cart"
-                disabled={isInactive || item.stock < 1}
-                onClick={() => handleAddToCart(item)}
-              >
-                {item.stock < 1 ? 'Out of stock' : 'Add to Cart'}
-              </button>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
