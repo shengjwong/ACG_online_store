@@ -12,9 +12,11 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\NewPasswordController;
+use App\Http\Controllers\ProfileController;
 
 // Public Authentication Routes
-Route::post('/register', function (Request $request) {$request->validate([
+Route::post('/register', function (Request $request) {
+    $request->validate([
         'name' => 'required|string|max:255',
         'email' => 'required|string|email|max:255|unique:users',
         'password' => 'required|string|min:6',
@@ -30,7 +32,7 @@ Route::post('/register', function (Request $request) {$request->validate([
         'membership_tier' => 'Bronze',
     ]);
 
-    $token =$user->createToken('auth_token')->plainTextToken;
+    $token = $user->createToken('auth_token')->plainTextToken;
 
     return response()->json([
         'status' => 'success',
@@ -41,20 +43,21 @@ Route::post('/register', function (Request $request) {$request->validate([
     ], 201);
 });
 
-Route::post('/login', function (Request $request) {$request->validate([
+Route::post('/login', function (Request $request) {
+    $request->validate([
         'email' => 'required|email',
         'password' => 'required',
     ]);
 
     $user = User::where('email', strtolower(trim($request->email)))->first();
 
-    if (! $user || ! Hash::check($request->password,$user->password)) {
+    if (! $user || ! Hash::check($request->password, $user->password)) {
         throw ValidationException::withMessages([
             'email' => ['The provided credentials do not match our records.'],
         ]);
     }
 
-    $token =$user->createToken('auth_token')->plainTextToken;
+    $token = $user->createToken('auth_token')->plainTextToken;
 
     return response()->json([
         'status' => 'success',
@@ -72,13 +75,20 @@ Route::get('/products/{product}', [ProductController::class, 'show']);
 // Protected Routes (Sanctum Authenticated)
 Route::middleware('auth:sanctum')->group(function () {
 
-    Route::post('/logout', function (Request $request) {$request->user()->tokens()->delete();
+    Route::post('/logout', function (Request $request) {
+        $request->user()->tokens()->delete();
 
         return response()->json([
             'status' => 'success',
             'message' => 'Logged out successfully'
         ], 200);
     });
+
+    // User & Admin Profile + Password OTP Routes
+    Route::get('/profile', [ProfileController::class, 'show']);
+    Route::post('/profile/update', [ProfileController::class, 'updateProfile']);
+    Route::post('/profile/send-otp', [ProfileController::class, 'sendPasswordOtp']);
+    Route::post('/profile/change-password', [ProfileController::class, 'changePasswordWithOtp']);
 
     // Membership Management
     Route::post('/membership/register', [MembershipController::class, 'registerMembership']);
@@ -90,8 +100,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admin/memberships/{id}', [MembershipController::class, 'show']);
     Route::post('/admin/memberships/{id}/deactivate', [MembershipController::class, 'deactivate']);
     Route::post('/admin/memberships/{id}/renew', [MembershipController::class, 'adminRenew']);
-
-    // Membership Management
 
     // Protected User Management CRUD
     Route::apiResource('users', UserController::class);

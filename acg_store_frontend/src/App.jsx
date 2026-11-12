@@ -6,6 +6,7 @@ import Signup from './components/Signup';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 import AdminDashboard from './components/AdminDashboard';
+import Profile from './components/Profile';
 import Cart from './components/Cart';
 import MyOrders from './components/MyOrders';
 import PaymentHistory from './components/PaymentHistory';
@@ -201,6 +202,10 @@ function App() {
                   </>
                 )}
 
+                <Link to="/profile" className="nav-link-plain">
+                  Profile
+                </Link>
+
                 <span className="nav-welcome-text">
                   Welcome, <strong>{user.name}</strong>
                 </span>
@@ -225,6 +230,10 @@ function App() {
           <Route path="/signup" element={<Signup onLoginSuccess={(u) => setUser(u)} />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route
+            path="/profile"
+            element={user ? <Profile onUserUpdate={(updated) => setUser(updated)} /> : <Navigate to="/login" replace />}
+          />
           <Route path="/cart" element={user ? <Cart /> : <Navigate to="/login" replace />} />
           <Route path="/my-orders" element={user ? <MyOrders /> : <Navigate to="/login" replace />} />
           <Route path="/payments" element={user ? <PaymentHistory /> : <Navigate to="/login" replace />} />
