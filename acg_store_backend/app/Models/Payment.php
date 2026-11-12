@@ -17,8 +17,12 @@ class Payment extends Model
         'paid_at',
     ];
 
+    // Raw PayPal data stays on the server and is never sent to the browser
+    protected $hidden = ['payload_response'];
+
     protected $casts = [
         'paid_at' => 'datetime',
+        'payload_response' => 'array',
     ];
 
     public function order(): BelongsTo

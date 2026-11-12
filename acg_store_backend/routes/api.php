@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\UserController;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -84,6 +86,23 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/products', [ProductController::class, 'store']);
     Route::put('/products/{product}', [ProductController::class, 'update']);
     Route::delete('/products/{product}', [ProductController::class, 'destroy']);
+
+    // Cart (Oscar)
+    Route::get('/cart', [CartController::class, 'index']);
+    Route::post('/cart', [CartController::class, 'store']);
+    Route::delete('/cart', [CartController::class, 'clear']);
+    Route::put('/cart/{cartItem}', [CartController::class, 'update']);
+    Route::delete('/cart/{cartItem}', [CartController::class, 'destroy']);
+    Route::get('/my-orders', [CartController::class, 'orderHistory']);
+
+    // Payments via PayPal sandbox (Oscar)
+    Route::post('/checkout', [PaymentController::class, 'checkout']);
+    Route::get('/payments', [PaymentController::class, 'index']);
+    Route::get('/payments/{payment}', [PaymentController::class, 'show']);
+    Route::post('/payments/{payment}/pay', [PaymentController::class, 'pay']);
+    Route::post('/payments/{payment}/capture', [PaymentController::class, 'capture']);
+    Route::post('/payments/{payment}/cancel', [PaymentController::class, 'cancel']);
+    Route::put('/payments/{payment}', [PaymentController::class, 'update']); // admin only
 });
 
 Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])

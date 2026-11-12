@@ -1,16 +1,35 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
 import api from './api/axios';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 import AdminDashboard from './components/AdminDashboard';
+import Cart from './components/Cart';
+import MyOrders from './components/MyOrders';
+import PaymentHistory from './components/PaymentHistory';
+import PaymentResult from './components/PaymentResult';
+import AdminPayments from './components/AdminPayments';
+import './styles/Shop.css';
 import './styles/App.css';
 
 function ProductList() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState('');
+  const navigate = useNavigate();
+
+  const handleAddToCart = (item) => {
+    if (!localStorage.getItem('access_token')) {
+      navigate('/login');
+      return;
+    }
+    api.post('/cart', { product_id: item.id, quantity: 1 })
+      .then(() => setToast(`${item.name} added to cart`))
+      .catch((err) => setToast(err.response?.data?.message || 'Could not add to cart'))
+      .finally(() => setTimeout(() => setToast(''), 2500));
+  };
 
   useEffect(() => {
     api.get('/products')
@@ -31,6 +50,7 @@ function ProductList() {
 
   return (
     <div className="catalog-container">
+      {toast && <div className="shop-toast">{toast}</div>}
       <div className="catalog-header">
         <h2 className="catalog-title">Product Catalog</h2>
         <div className="catalog-divider"></div>
@@ -76,6 +96,14 @@ function ProductList() {
                   Stock: <strong>{item.stock}</strong>
                 </span>
               </div>
+
+              <button
+                className="btn-add-cart"
+                disabled={isInactive || item.stock < 1}
+                onClick={() => handleAddToCart(item)}
+              >
+                {item.stock < 1 ? 'Out of stock' : 'Add to Cart'}
+              </button>
             </div>
           );
         })}
@@ -107,10 +135,21 @@ function App() {
           <div className="nav-right-actions">
             {user ? (
               <div className="nav-user-group">
-                {user.role === 'admin' && (
-                  <Link to="/admin" className="btn-admin">
-                    Admin Dashboard
-                  </Link>
+                {user.role === 'admin' ? (
+                  <>
+                    <Link to="/admin" className="btn-admin">
+                      Admin Dashboard
+                    </Link>
+                    <Link to="/admin/payments" className="btn-admin">
+                      Payments
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/cart" className="nav-link-plain">Cart</Link>
+                    <Link to="/my-orders" className="nav-link-plain">My Orders</Link>
+                    <Link to="/payments" className="nav-link-plain">Payments</Link>
+                  </>
                 )}
 
                 <span className="nav-welcome-text">
@@ -136,6 +175,15 @@ function App() {
           <Route path="/signup" element={<Signup onLoginSuccess={(u) => setUser(u)} />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/cart" element={user ? <Cart /> : <Navigate to="/login" replace />} />
+          <Route path="/my-orders" element={user ? <MyOrders /> : <Navigate to="/login" replace />} />
+          <Route path="/payments" element={user ? <PaymentHistory /> : <Navigate to="/login" replace />} />
+          <Route path="/payment/success" element={user ? <PaymentResult mode="success" /> : <Navigate to="/login" replace />} />
+          <Route path="/payment/cancel" element={user ? <PaymentResult mode="cancel" /> : <Navigate to="/login" replace />} />
+          <Route
+            path="/admin/payments"
+            element={user && user.role === 'admin' ? <AdminPayments /> : <Navigate to="/login" replace />}
+          />
           <Route 
             path="/admin" 
             element={user && user.role === 'admin' ? <AdminDashboard /> : <Navigate to="/login" replace />} 
