@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\MembershipController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\UserController;
@@ -78,6 +79,15 @@ Route::middleware('auth:sanctum')->group(function () {
             'message' => 'Logged out successfully'
         ], 200);
     });
+
+    // Membership Management
+    Route::post('/membership/register', [MembershipController::class, 'registerMembership']);
+    Route::get('/membership/me', [MembershipController::class, 'mine']);
+    Route::post('/membership/renew', [MembershipController::class, 'renew']);
+    Route::get('/admin/memberships', [MembershipController::class, 'index']);
+    Route::get('/admin/memberships/{id}', [MembershipController::class, 'show']);
+    Route::post('/admin/memberships/{id}/deactivate', [MembershipController::class, 'deactivate']);
+    Route::post('/admin/memberships/{id}/renew', [MembershipController::class, 'adminRenew']);
 
     // Protected User Management CRUD
     Route::apiResource('users', UserController::class);

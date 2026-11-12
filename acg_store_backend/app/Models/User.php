@@ -21,6 +21,8 @@ class User extends Authenticatable
         'profile_image',
         'membership_tier',
         'membership_expiry',
+        'membership_status',
+        'membership_status',
     ];
 
     protected $hidden = [
@@ -33,6 +35,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'membership_expiry' => 'datetime',
+            'membership_expiry' => 'datetime',
         ];
     }
 }
