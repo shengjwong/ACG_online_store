@@ -23,7 +23,7 @@ Route::post('/register', function (Request $request) {$request->validate([
 
     $user = User::create([
         'name' => $request->name,
-        'email' => $request->email,
+        'email' => strtolower(trim($request->email)),
         'password' => Hash::make($request->password),
         'role' => 'member',
         'phone_number' => $request->phone_number,
@@ -46,7 +46,7 @@ Route::post('/login', function (Request $request) {$request->validate([
         'password' => 'required',
     ]);
 
-    $user = User::where('email',$request->email)->first();
+    $user = User::where('email', strtolower(trim($request->email)))->first();
 
     if (! $user || ! Hash::check($request->password,$user->password)) {
         throw ValidationException::withMessages([
@@ -82,12 +82,16 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Membership Management
     Route::post('/membership/register', [MembershipController::class, 'registerMembership']);
+    Route::post('/membership/renew/checkout', [MembershipController::class, 'startRenewal']);
+    Route::post('/membership/renew/capture', [MembershipController::class, 'captureRenewal']);
+    Route::post('/membership/renew/cancel', [MembershipController::class, 'cancelRenewal']);
     Route::get('/membership/me', [MembershipController::class, 'mine']);
-    Route::post('/membership/renew', [MembershipController::class, 'renew']);
     Route::get('/admin/memberships', [MembershipController::class, 'index']);
     Route::get('/admin/memberships/{id}', [MembershipController::class, 'show']);
     Route::post('/admin/memberships/{id}/deactivate', [MembershipController::class, 'deactivate']);
     Route::post('/admin/memberships/{id}/renew', [MembershipController::class, 'adminRenew']);
+
+    // Membership Management
 
     // Protected User Management CRUD
     Route::apiResource('users', UserController::class);

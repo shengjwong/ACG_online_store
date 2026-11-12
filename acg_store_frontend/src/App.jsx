@@ -13,6 +13,7 @@ import PaymentResult from './components/PaymentResult';
 import AdminPayments from './components/AdminPayments';
 import MembershipManagement from './components/MembershipManagement';
 import MembershipRegistration from './components/MembershipRegistration';
+import MembershipPaymentResult from './components/MembershipPaymentResult';
 import './styles/Shop.css';
 import './styles/App.css';
 
@@ -154,7 +155,7 @@ function App() {
                     <Link to="/cart" className="nav-link-plain">Cart</Link>
                     <Link to="/my-orders" className="nav-link-plain">My Orders</Link>
                     <Link to="/payments" className="nav-link-plain">Payments</Link>
-                    <Link to="/membership" className="nav-link-plain">Member</Link>
+                    <Link to="/membership" className="btn-admin">Member</Link>
                   </>
                 )}
 
@@ -170,7 +171,7 @@ function App() {
               <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                 <Link to="/login" className="btn-login">Login</Link>
                 <Link to="/signup" className="btn-signup">Sign Up</Link>
-                <Link to="/login" className="nav-link-plain">Member</Link>
+                <Link to="/login" className="btn-admin">Member</Link>
               </div>
             )}
           </div>
@@ -185,9 +186,17 @@ function App() {
           <Route path="/cart" element={user ? <Cart /> : <Navigate to="/login" replace />} />
           <Route path="/my-orders" element={user ? <MyOrders /> : <Navigate to="/login" replace />} />
           <Route path="/payments" element={user ? <PaymentHistory /> : <Navigate to="/login" replace />} />
-          <Route path="/membership" element={user && user.role !== 'admin' ? <MembershipManagement /> : <Navigate to="/login" replace />} />
-          <Route path="/membership/register" element={user && user.role !== 'admin' ? <MembershipRegistration /> : <Navigate to="/login" replace />} />
-          <Route path="/admin/memberships" element={user && user.role === 'admin' ? <MembershipManagement /> : <Navigate to="/login" replace />} />
+          <Route
+            path="/membership"
+            element={user && user.role === 'member' ? <MembershipManagement /> : <Navigate to="/login" replace />}
+          />
+          <Route
+            path="/membership/register"
+            element={user && user.role === 'member' ? <MembershipRegistration /> : <Navigate to="/login" replace />}
+          />
+          <Route path="/membership/payment/success" element={user ? <MembershipPaymentResult mode="success" /> : <Navigate to="/login" replace />} />
+          <Route path="/membership/payment/cancel" element={user ? <MembershipPaymentResult mode="cancel" /> : <Navigate to="/login" replace />} />
+          <Route path="/admin/memberships" element={user && user.role === 'admin' ? <MembershipManagement admin /> : <Navigate to="/login" replace />} />
           <Route path="/payment/success" element={user ? <PaymentResult mode="success" /> : <Navigate to="/login" replace />} />
           <Route path="/payment/cancel" element={user ? <PaymentResult mode="cancel" /> : <Navigate to="/login" replace />} />
           <Route
