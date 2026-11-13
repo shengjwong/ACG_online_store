@@ -14,6 +14,7 @@ use Illuminate\Validation\ValidationException;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\OrderController;
 
 // Public Authentication Routes
 Route::post('/register', function (Request $request) {
@@ -126,7 +127,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/cart', [CartController::class, 'clear']);
     Route::put('/cart/{cartItem}', [CartController::class, 'update']);
     Route::delete('/cart/{cartItem}', [CartController::class, 'destroy']);
-    Route::get('/my-orders', [CartController::class, 'orderHistory']);
+    Route::get('/my-orders', [OrderController::class, 'mine']);
+    Route::put('/my-orders/{order}/address', [OrderController::class, 'updateAddress']);
+    Route::post('/my-orders/{order}/confirm-received', [OrderController::class, 'confirmReceived']);
+    Route::get('/admin/orders', [OrderController::class, 'adminIndex']);
+    Route::put('/admin/orders/{order}', [OrderController::class, 'adminUpdate']);
 
     // Payments via PayPal sandbox (Oscar)
     Route::post('/checkout', [PaymentController::class, 'checkout']);

@@ -9,6 +9,7 @@ import AdminDashboard from './components/AdminDashboard';
 import Profile from './components/Profile';
 import Cart from './components/Cart';
 import MyOrders from './components/MyOrders';
+import AdminOrderManagement from './components/AdminOrderManagement';
 import PaymentHistory from './components/PaymentHistory';
 import PaymentResult from './components/PaymentResult';
 import AdminPayments from './components/AdminPayments';
@@ -252,6 +253,7 @@ function App() {
                     <Link to="/admin/payments" className="btn-admin">
                       Payments
                     </Link>
+                    <Link to="/admin/orders" className="btn-admin">Orders</Link>
                     <Link to="/admin/memberships" className="btn-admin">Memberships</Link>
                     <Link to="/admin/rewards" className="btn-admin">Rewards</Link>
                   </>
@@ -311,6 +313,7 @@ function App() {
           />
           <Route path="/points" element={user && user.role === 'member' ? <MyPoints /> : <Navigate to="/login" replace />} />
           <Route path="/rewards" element={user && user.role === 'member' ? <RewardsStore /> : <Navigate to="/login" replace />} />
+          <Route path="/admin/orders" element={user && user.role === 'admin' ? <AdminOrderManagement /> : <Navigate to="/login" replace />} />
           <Route path="/admin/rewards" element={user && user.role === 'admin' ? <AdminRewards /> : <Navigate to="/login" replace />} />
           <Route path="/membership/payment/success" element={user ? <MembershipPaymentResult mode="success" /> : <Navigate to="/login" replace />} />
           <Route path="/membership/payment/cancel" element={user ? <MembershipPaymentResult mode="cancel" /> : <Navigate to="/login" replace />} />
