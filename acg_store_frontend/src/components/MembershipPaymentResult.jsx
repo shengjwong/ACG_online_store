@@ -7,6 +7,7 @@ export default function MembershipPaymentResult({ mode }) {
   const [params] = useSearchParams();
   const [message, setMessage] = useState(mode === 'cancel' ? 'Cancelling renewal payment...' : 'Confirming PayPal payment...');
   const [error, setError] = useState('');
+  const [membership, setMembership] = useState(null);
 
   useEffect(() => {
     let active = true;
@@ -24,7 +25,10 @@ export default function MembershipPaymentResult({ mode }) {
             payment_id: paymentId,
             paypal_order_id: paypalOrderId,
           });
-          if (active) setMessage(response.data.message || 'Membership renewed successfully.');
+          if (active) {
+            setMessage(response.data.message || 'Membership renewed successfully.');
+            setMembership(response.data.data || null);
+          }
         }
       } catch (e) {
         if (active) setError(e.response?.data?.message || e.message || 'Unable to process the renewal result.');
@@ -39,7 +43,12 @@ export default function MembershipPaymentResult({ mode }) {
       <section className="m-card">
         <h1>{mode === 'cancel' ? 'Renewal Cancelled' : 'Membership Payment'}</h1>
         {error ? <p className="m-alert error">{error}</p> : <p className="m-alert">{message}</p>}
-        <Link to="/membership">Return to My Membership</Link>
+        {membership && !error && <p><strong>New membership expiry:</strong> {membership.membership_expiry ? new Date(membership.membership_expiry).toLocaleDateString() : 'Updated'}</p>}
+        {!error && mode === 'success' && <p>Your receipt is available under Payment History after this successful payment.</p>}
+        <div style={{display:'flex',gap:16,flexWrap:'wrap',marginTop:16}}>
+          <Link to="/membership">Return to My Membership</Link>
+          {membership && !error && <Link to="/payments">View Payment Receipt</Link>}
+        </div>
       </section>
     </main>
   );

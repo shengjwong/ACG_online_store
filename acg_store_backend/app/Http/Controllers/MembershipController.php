@@ -141,7 +141,7 @@ class MembershipController extends Controller
             $base = ($user->membership_status === 'active' && $expiry && $expiry->isFuture()) ? $expiry : now();
             // Renewal preserves the existing membership tier and accumulated spend.
             $user->membership_status = 'active';
-            $user->membership_expiry = $base->copy()->addMonths(3);
+            $user->membership_expiry = $base->copy()->addMonthsNoOverflow(3);
             $user->save();
             // A renewal within the grace window keeps existing points usable for another 3-month grace period.
             DB::table('points_transactions')->where('user_id', $user->id)
@@ -174,6 +174,8 @@ class MembershipController extends Controller
                 'payment_status' => $p->status,
                 'transaction_id' => $p->capture_id,
                 'description' => 'Membership Renewal (3 months)',
+                'receipt_number' => 'ACG-MEM-' . str_pad((string) $p->id, 6, '0', STR_PAD_LEFT),
+                'currency' => $p->currency,
             ]);
         return response()->json(['status' => 'success', 'data' => $rows]);
     }
