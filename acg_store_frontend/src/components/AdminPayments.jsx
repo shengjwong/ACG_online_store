@@ -7,13 +7,14 @@ const STATUSES = ['pending', 'successful', 'failed', 'refunded'];
 function AdminPayments() {
   const [payments, setPayments] = useState([]);
   const [filter, setFilter] = useState('');
+  const [search, setSearch] = useState('');
   const [edits, setEdits] = useState({}); // payment id -> chosen status
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
 
-  const loadPayments = (status = filter) =>
-    api.get('/payments', { params: status ? { status } : {} })
+  const loadPayments = (status = filter, term = search) =>
+    api.get('/payments', { params: { ...(status && { status }), ...(term.trim() && { search: term.trim() }) } })
       .then((res) => setPayments(res.data.data))
       .catch(() => setError('Failed to load payments.'))
       .finally(() => setLoading(false));
@@ -25,7 +26,12 @@ function AdminPayments() {
 
   const changeFilter = (value) => {
     setFilter(value);
-    loadPayments(value);
+    loadPayments(value, search);
+  };
+
+  const submitSearch = (e) => {
+    e.preventDefault();
+    loadPayments(filter, search);
   };
 
   const save = (payment) => {
@@ -52,13 +58,19 @@ function AdminPayments() {
       {error && <div className="shop-error">{error}</div>}
       {notice && <div className="shop-success">{notice}</div>}
 
-      <div style={{ marginBottom: '1rem' }}>
-        <span className="shop-muted">Filter: </span>
+      <form className="shop-toolbar" onSubmit={submitSearch}>
+        <input
+          className="shop-input"
+          placeholder="Search order no., transaction ID, customer name or email"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <button type="submit" className="shop-btn shop-btn-primary">Search</button>
         <select className="shop-select" value={filter} onChange={(e) => changeFilter(e.target.value)}>
-          <option value="">All</option>
+          <option value="">All statuses</option>
           {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
-      </div>
+      </form>
 
       <div className="shop-card shop-table-wrap">
         <table className="shop-table">

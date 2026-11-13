@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import '../styles/Shop.css';
@@ -7,6 +7,8 @@ function MyOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState('');
 
   const loadOrders = () =>
     api.get('/my-orders')
@@ -33,6 +35,14 @@ function MyOrders() {
       .catch((err) => setError(err.response?.data?.message || 'Could not cancel payment.'));
   };
 
+  const visible = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return orders.filter((o) =>
+      (!status || o.order_status === status) &&
+      (!term || o.order_number.toLowerCase().includes(term))
+    );
+  }, [orders, search, status]);
+
   if (loading) return <div className="shop-page shop-muted">Loading orders...</div>;
 
   return (
@@ -40,13 +50,33 @@ function MyOrders() {
       <h2 className="shop-title">My Orders</h2>
       {error && <div className="shop-error">{error}</div>}
 
+      <div className="shop-toolbar">
+        <input
+          className="shop-input"
+          placeholder="Search order number"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <select className="shop-select" value={status} onChange={(e) => setStatus(e.target.value)}>
+          <option value="">All statuses</option>
+          <option value="pending">Pending</option>
+          <option value="paid">Paid</option>
+          <option value="shipped">Shipped</option>
+          <option value="completed">Completed</option>
+          <option value="cancel_pending">Cancel pending</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+
       {orders.length === 0 ? (
         <div className="shop-card shop-empty">
           <p>You have no orders yet.</p>
           <Link to="/" className="shop-btn shop-btn-primary">Browse products</Link>
         </div>
       ) : (
-        orders.map((order) => (
+        visible.length === 0 ? (
+          <div className="shop-card shop-empty">No orders match your search.</div>
+        ) : visible.map((order) => (
           <div className="shop-card" key={order.id}>
             <div className="order-head">
               <div>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\PaymentReceiptMail;
 use App\Models\CartItem;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -10,6 +11,7 @@ use App\Models\Product;
 use App\Services\PayPalService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -38,6 +40,18 @@ class PaymentController extends Controller
 
         if ($request->filled('status')) {
             $query->where('payment_status', $request->status);
+        }
+
+        // Search by order number, PayPal transaction id, or customer name/email
+        if ($request->filled('search')) {
+            $term = '%' . $request->search . '%';
+            $query->where(function ($q) use ($term) {
+                $q->where('transaction_id', 'like', $term)
+                    ->orWhereHas('order', function ($o) use ($term) {
+                        $o->where('order_number', 'like', $term)
+                            ->orWhereHas('user', fn ($u) => $u->where('name', 'like', $term)->orWhere('email', 'like', $term));
+                    });
+            });
         }
 
         return response()->json(['status' => 'success', 'data' => $query->get()], 200);
@@ -201,10 +215,19 @@ class PaymentController extends Controller
                 ->delete();
         });
 
+        $payment = $payment->fresh()->load('order.items', 'order.user');
+
+        // Email receipt. A mail failure must never undo a completed payment.
+        try {
+            Mail::to($payment->order->user->email)->send(new PaymentReceiptMail($payment));
+        } catch (Throwable $e) {
+            report($e);
+        }
+
         return response()->json([
             'status' => 'success',
             'message' => 'Payment successful.',
-            'data' => $payment->fresh()->load('order.items'),
+            'data' => $payment,
         ], 200);
     }
 

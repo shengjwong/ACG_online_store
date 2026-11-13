@@ -31,6 +31,7 @@ function PaymentResult({ mode }) {
       .then((res) => {
         setState('ok');
         setMessage(res.data.message);
+        window.dispatchEvent(new Event('cart-updated')); // cart was emptied after payment
       })
       .catch((err) => {
         setState('error');

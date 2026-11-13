@@ -22,7 +22,8 @@ function ProductList() {
   const [products, setProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
-  const [toast, setToast] = useState('');
+  const [toast, setToast] = useState(null);
+  const [categoryId, setCategoryId] = useState('');
   const navigate = useNavigate();
 
   const handleAddToCart = (item) => {
@@ -31,9 +32,12 @@ function ProductList() {
       return;
     }
     api.post('/cart', { product_id: item.id, quantity: 1 })
-      .then(() => setToast(`${item.name} added to cart`))
-      .catch((err) => setToast(err.response?.data?.message || 'Could not add to cart'))
-      .finally(() => setTimeout(() => setToast(''), 2500));
+      .then(() => {
+        setToast({ text: `${item.name} added to cart`, type: 'success' });
+        window.dispatchEvent(new Event('cart-updated'));
+      })
+      .catch((err) => setToast({ text: err.response?.data?.message || 'Could not add to cart', type: 'error' }))
+      .finally(() => setTimeout(() => setToast(null), 2500));
   };
 
   useEffect(() => {
@@ -45,7 +49,14 @@ function ProductList() {
       .catch(() => setLoading(false));
   }, []);
 
+  // Categories come from the products themselves (each product includes its category)
+  const categories = [];
+  products.forEach((p) => {
+    if (p.category && !categories.some((c) => c.id === p.category.id)) categories.push(p.category);
+  });
+
   const filteredProducts = products
+    .filter((item) => categoryId === '' || String(item.category_id) === categoryId)
     .filter((item) => {
       const query = searchQuery.toLowerCase().trim();
       return (
@@ -69,7 +80,12 @@ function ProductList() {
 
   return (
     <div className="catalog-container">
-      {toast && <div className="shop-toast">{toast}</div>}
+      {toast && (
+        <div className={`shop-toast ${toast.type}`}>
+          <span className="shop-toast-icon">{toast.type === 'success' ? '✓' : '!'}</span>
+          {toast.text}
+        </div>
+      )}
       <div className="catalog-header">
         <h2 className="catalog-title">Product Catalog</h2>
         <div className="catalog-divider"></div>
@@ -96,9 +112,32 @@ function ProductList() {
         )}
       </div>
 
+      {/* Category filter */}
+      {categories.length > 0 && (
+        <div className="category-chips">
+          <button
+            type="button"
+            className={`chip ${categoryId === '' ? 'active' : ''}`}
+            onClick={() => setCategoryId('')}
+          >
+            All <span className="chip-count">{products.length}</span>
+          </button>
+          {categories.map((c) => (
+            <button
+              type="button"
+              key={c.id}
+              className={`chip ${categoryId === String(c.id) ? 'active' : ''}`}
+              onClick={() => setCategoryId(String(c.id))}
+            >
+              {c.name} <span className="chip-count">{products.filter((p) => p.category_id === c.id).length}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
       {filteredProducts.length === 0 ? (
         <p style={{ textAlign: 'center', color: '#94A3B8', marginTop: '2rem' }}>
-          No products found matching "<strong>{searchQuery}</strong>".
+          No products found{searchQuery ? <> matching "<strong>{searchQuery}</strong>"</> : ''}.
         </p>
       ) : (
         <div className="product-grid">
@@ -160,6 +199,27 @@ function ProductList() {
 
 function App() {
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));
+  const [cartCount, setCartCount] = useState(0);
+
+  // Red badge on the navbar Cart link: total number of items in the cart
+  useEffect(() => {
+    if (!user || user.role === 'admin') {
+      setCartCount(0);
+      return undefined;
+    }
+    const refresh = (e) => {
+      if (typeof e?.detail === 'number') {
+        setCartCount(e.detail);
+        return;
+      }
+      api.get('/cart')
+        .then((res) => setCartCount(res.data.data.total_quantity || 0))
+        .catch(() => {});
+    };
+    refresh();
+    window.addEventListener('cart-updated', refresh);
+    return () => window.removeEventListener('cart-updated', refresh);
+  }, [user]);
 
   const handleLogout = () => {
     api.post('/logout').finally(() => {
@@ -195,7 +255,10 @@ function App() {
                   </>
                 ) : (
                   <>
-                    <Link to="/cart" className="nav-link-plain">Cart</Link>
+                    <Link to="/cart" className="nav-link-plain cart-link">
+                      Cart
+                      {cartCount > 0 && <span className="cart-badge">{cartCount > 99 ? '99+' : cartCount}</span>}
+                    </Link>
                     <Link to="/my-orders" className="nav-link-plain">My Orders</Link>
                     <Link to="/payments" className="nav-link-plain">Payments</Link>
                     <Link to="/membership" className="btn-admin">Member</Link>

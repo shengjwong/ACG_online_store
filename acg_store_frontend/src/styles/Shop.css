@@ -44,8 +44,29 @@
 .order-items { margin: 0.5rem 0; padding-left: 1.1rem; color: #CBD5E1; font-size: 0.9rem; }
 .order-actions { display: flex; gap: 0.6rem; margin-top: 0.8rem; flex-wrap: wrap; }
 
-.shop-toast { position: fixed; top: 80px; right: 20px; background: #1e1e1e; border: 1px solid #D4AF37; color: #F8FAFC; padding: 0.7rem 1.1rem; border-radius: 8px; z-index: 50; font-size: 0.9rem; }
+@keyframes toast-pop { from { opacity: 0; transform: translate(-50%, -16px); } to { opacity: 1; transform: translate(-50%, 0); } }
+.shop-toast { position: fixed; top: 84px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 0.6rem; background: #151A23; border: 1px solid #D4AF37; color: #F8FAFC; padding: 0.8rem 1.4rem; border-radius: 10px; z-index: 1000; font-size: 0.95rem; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: toast-pop 0.25s ease-out; max-width: 90vw; }
+.shop-toast.success { border-color: #4caf50; }
+.shop-toast.error { border-color: #EF4444; }
+.shop-toast-icon { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: #4caf50; color: #fff; font-size: 0.8rem; flex-shrink: 0; }
+.shop-toast.error .shop-toast-icon { background: #EF4444; }
 .btn-add-cart { width: 100%; margin-top: 0.8rem; background: #6366F1; color: #fff; border: none; border-radius: 8px; padding: 0.6rem; font-weight: 700; cursor: pointer; }
 .btn-add-cart:disabled { background: #334155; color: #94A3B8; cursor: not-allowed; }
 .nav-link-plain { color: #CBD5E1; text-decoration: none; font-size: 0.88rem; font-weight: 600; }
 .nav-link-plain:hover { color: #fff; }
+
+/* Search + filter bars */
+.shop-toolbar { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; margin-bottom: 1rem; }
+.shop-input { flex: 1; min-width: 200px; background: #0B0E14; color: #F8FAFC; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 0.55rem 0.8rem; font-family: inherit; }
+.catalog-toolbar { max-width: 1200px; margin: 0 auto 1.5rem; padding: 0 1.5rem; display: flex; gap: 0.6rem; flex-wrap: wrap; }
+
+/* Cart badge in navbar */
+.cart-link { position: relative; display: inline-block; margin-right: 8px; }
+.cart-badge { position: absolute; top: -9px; right: -16px; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 999px; background: #EF4444; color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
+
+/* Category chips on the catalog */
+.category-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; max-width: 900px; margin: -0.8rem auto 2rem; padding: 0 1rem; }
+.chip { background: #131823; color: #CBD5E1; border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; padding: 0.4rem 1rem; font-size: 0.88rem; font-weight: 600; cursor: pointer; }
+.chip:hover { border-color: #6366F1; color: #fff; }
+.chip.active { background: #6366F1; border-color: #6366F1; color: #fff; }
+.chip-count { opacity: 0.7; font-size: 0.78rem; margin-left: 0.2rem; }

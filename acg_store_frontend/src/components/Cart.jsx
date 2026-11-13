@@ -12,7 +12,11 @@ function Cart() {
 
   const loadCart = () =>
     api.get('/cart')
-      .then((res) => setCart(res.data.data))
+      .then((res) => {
+        setCart(res.data.data);
+        // tell the navbar badge the new total
+        window.dispatchEvent(new CustomEvent('cart-updated', { detail: res.data.data.total_quantity }));
+      })
       .catch(() => setError('Failed to load your cart.'))
       .finally(() => setLoading(false));
 
