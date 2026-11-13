@@ -15,6 +15,9 @@ import AdminPayments from './components/AdminPayments';
 import MembershipManagement from './components/MembershipManagement';
 import MembershipRegistration from './components/MembershipRegistration';
 import MembershipPaymentResult from './components/MembershipPaymentResult';
+import RewardsStore from './components/RewardsStore';
+import MyPoints from './components/MyPoints';
+import AdminRewards from './components/AdminRewards';
 import './styles/Shop.css';
 import './styles/App.css';
 
@@ -249,9 +252,8 @@ function App() {
                     <Link to="/admin/payments" className="btn-admin">
                       Payments
                     </Link>
-                    <Link to="/admin/memberships" className="btn-admin">
-                      Memberships
-                    </Link>
+                    <Link to="/admin/memberships" className="btn-admin">Memberships</Link>
+                    <Link to="/admin/rewards" className="btn-admin">Rewards</Link>
                   </>
                 ) : (
                   <>
@@ -281,7 +283,6 @@ function App() {
               <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                 <Link to="/login" className="btn-login">Login</Link>
                 <Link to="/signup" className="btn-signup">Sign Up</Link>
-                <Link to="/login" className="btn-admin">Member</Link>
               </div>
             )}
           </div>
@@ -308,6 +309,9 @@ function App() {
             path="/membership/register"
             element={user && user.role === 'member' ? <MembershipRegistration /> : <Navigate to="/login" replace />}
           />
+          <Route path="/points" element={user && user.role === 'member' ? <MyPoints /> : <Navigate to="/login" replace />} />
+          <Route path="/rewards" element={user && user.role === 'member' ? <RewardsStore /> : <Navigate to="/login" replace />} />
+          <Route path="/admin/rewards" element={user && user.role === 'admin' ? <AdminRewards /> : <Navigate to="/login" replace />} />
           <Route path="/membership/payment/success" element={user ? <MembershipPaymentResult mode="success" /> : <Navigate to="/login" replace />} />
           <Route path="/membership/payment/cancel" element={user ? <MembershipPaymentResult mode="cancel" /> : <Navigate to="/login" replace />} />
           <Route path="/admin/memberships" element={user && user.role === 'admin' ? <MembershipManagement admin /> : <Navigate to="/login" replace />} />

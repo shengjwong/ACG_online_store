@@ -7,6 +7,8 @@ use App\Models\CartItem;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
+use App\Models\PointsTransaction;
+use App\Models\User;
 use App\Models\Product;
 use App\Services\PayPalService;
 use Illuminate\Http\Request;
@@ -201,6 +203,28 @@ class PaymentController extends Controller
             $order = $payment->order()->with('items')->first();
             $order->update(['order_status' => 'paid']);
 
+            // Membership loyalty: award once when this payment is captured successfully.
+            $member = User::whereKey($order->user_id)->lockForUpdate()->first();
+            if ($member && $member->role === 'member' && $member->membership_registered_at && ! PointsTransaction::where('reference_type', 'payment')->where('reference_id', (string) $payment->id)->exists()) {
+                $eligibleSpend = (float) $order->subtotal;
+                $earned = (int) floor($eligibleSpend);
+                $member->total_spend = (float) $member->total_spend + $eligibleSpend;
+                $member->points_balance = (int) $member->points_balance + $earned;
+                $member->membership_tier = $member->total_spend >= 10000 ? 'Diamond'
+                    : ($member->total_spend >= 5000 ? 'Platinum'
+                    : ($member->total_spend >= 3000 ? 'Gold'
+                    : ($member->total_spend >= 1000 ? 'Silver' : 'Bronze')));
+                $member->save();
+                if ($earned > 0) {
+                    PointsTransaction::create([
+                        'user_id' => $member->id, 'type' => 'earned', 'points' => $earned,
+                        'reference_type' => 'payment', 'reference_id' => (string) $payment->id,
+                        'description' => 'Points earned from order ' . $order->order_number,
+                        'expires_at' => $member->membership_expiry ? $member->membership_expiry->copy()->addMonths(3) : now()->addMonth()->addMonths(3),
+                    ]);
+                }
+            }
+
             foreach ($order->items as $item) {
                 if ($item->product_id) {
                     // Never let stock go below zero
@@ -288,7 +312,7 @@ class PaymentController extends Controller
             }
         }
 
-        DB::transaction(function () use ($request, $payment, $new, $stored) {
+        DB::transaction(function () use ($request, $payment, $new, $old, $stored) {
             $payment->update([
                 'payment_status' => $new,
                 'payload_response' => $stored ?: $payment->payload_response,
@@ -306,6 +330,28 @@ class PaymentController extends Controller
             }
 
             $order->update($orderUpdate);
+
+            if ($new === 'refunded' && $old === 'successful') {
+                $member = User::whereKey($order->user_id)->lockForUpdate()->first();
+                $earned = PointsTransaction::where('reference_type', 'payment')
+                    ->where('reference_id', (string) $payment->id)->where('type', 'earned')->first();
+                if ($member && $earned && ! PointsTransaction::where('reference_type', 'payment_refund')
+                    ->where('reference_id', (string) $payment->id)->exists()) {
+                    $deduct = (int) $earned->points;
+                    $member->points_balance = max(0, (int) $member->points_balance - $deduct);
+                    $member->total_spend = max(0, (float) $member->total_spend - (float) $order->subtotal);
+                    $member->membership_tier = $member->total_spend >= 10000 ? 'Diamond'
+                        : ($member->total_spend >= 5000 ? 'Platinum'
+                        : ($member->total_spend >= 3000 ? 'Gold'
+                        : ($member->total_spend >= 1000 ? 'Silver' : 'Bronze')));
+                    $member->save();
+                    PointsTransaction::create([
+                        'user_id' => $member->id, 'type' => 'refund', 'points' => -$deduct,
+                        'reference_type' => 'payment_refund', 'reference_id' => (string) $payment->id,
+                        'description' => 'Points reversed for refunded order ' . $order->order_number,
+                    ]);
+                }
+            }
         });
 
         return response()->json([

@@ -22,6 +22,9 @@ class User extends Authenticatable
         'membership_tier',
         'membership_expiry',
         'membership_status',
+        'membership_registered_at',
+        'total_spend',
+        'points_balance',
     ];
 
     protected $hidden = [
@@ -35,6 +38,9 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'membership_expiry' => 'datetime',
+            'membership_registered_at' => 'datetime',
+            'total_spend' => 'decimal:2',
+            'points_balance' => 'integer',
         ];
     }
 }

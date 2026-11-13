@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\MembershipController;
+use App\Http\Controllers\RewardsController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\UserController;
@@ -96,6 +97,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/membership/renew/capture', [MembershipController::class, 'captureRenewal']);
     Route::post('/membership/renew/cancel', [MembershipController::class, 'cancelRenewal']);
     Route::get('/membership/me', [MembershipController::class, 'mine']);
+    Route::get('/membership/payment-history', [MembershipController::class, 'paymentHistory']);
+    Route::get('/points', [RewardsController::class, 'points']);
+    Route::get('/rewards', [RewardsController::class, 'index']);
+    Route::post('/rewards/{rewardProduct}/redeem', [RewardsController::class, 'redeem']);
+    Route::get('/my-redemptions', [RewardsController::class, 'myRedemptions']);
+    Route::get('/admin/rewards', [RewardsController::class, 'adminIndex']);
+    Route::post('/admin/rewards', [RewardsController::class, 'store']);
+    Route::put('/admin/rewards/{rewardProduct}', [RewardsController::class, 'update']);
+    Route::delete('/admin/rewards/{rewardProduct}', [RewardsController::class, 'destroy']);
+    Route::get('/admin/redemptions', [RewardsController::class, 'adminRedemptions']);
     Route::get('/admin/memberships', [MembershipController::class, 'index']);
     Route::get('/admin/memberships/{id}', [MembershipController::class, 'show']);
     Route::post('/admin/memberships/{id}/deactivate', [MembershipController::class, 'deactivate']);

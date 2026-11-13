@@ -1,1 +1,23 @@
 .membership-page{max-width:1200px;margin:35px auto;padding:0 22px;color:#f8fafc}.membership-page h1{font-size:30px}.m-card{background:#151b27;border:1px solid #293449;border-radius:14px;padding:22px;margin:20px 0}.m-card p{padding:8px 0;border-bottom:1px solid #293449}.m-card button{background:#eab308;color:#111827;border:0;border-radius:7px;padding:10px 14px;font-weight:600;cursor:pointer;margin:5px 4px 5px 0}.m-card button:disabled{opacity:.5;cursor:not-allowed}.m-card button.m-danger{background:#991b1b;color:white}.m-card small{display:block;color:#9ca3af;margin-top:8px}.m-status{padding:5px 10px;border-radius:18px;background:#374151;font-size:12px;text-transform:capitalize}.m-status.active{background:#14532d;color:#bbf7d0}.m-status.inactive{background:#7f1d1d;color:#fecaca}.m-status.expired{background:#78350f;color:#fde68a}.m-layout{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;align-items:start}.m-scroll{overflow-x:auto}.m-card table{width:100%;border-collapse:collapse;min-width:580px}.m-card th,.m-card td{text-align:left;padding:12px 8px;border-bottom:1px solid #293449}.m-card td small{overflow-wrap:anywhere}.m-alert{padding:12px;background:#14532d;border-radius:8px}.m-alert.error{background:#7f1d1d}.m-card h2{margin-top:0}@media(max-width:850px){.m-layout{grid-template-columns:1fr}}
+
+/* Member dashboard refresh */
+.member-dashboard{max-width:1120px;margin:48px auto 80px}
+.member-hero{display:flex;justify-content:space-between;align-items:center;padding:30px 34px;margin-bottom:24px;border:1px solid #293449;border-radius:20px;background:radial-gradient(circle at 85% 20%,rgba(99,102,241,.22),transparent 34%),linear-gradient(125deg,#171f30,#111827)}
+.member-eyebrow,.rewards-admin-header>div>span,.reward-editor-title span,.rewards-list-heading>div>span{font-size:11px;letter-spacing:2px;font-weight:800;color:#a5b4fc}
+.member-hero h1{font-size:34px;margin:10px 0 6px}.member-hero p{margin:0;color:#aab6c9}
+.tier-emblem{width:112px;height:112px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid #c3a66b;background:linear-gradient(145deg,#3b3325,#171c27);color:#f5d58b;box-shadow:0 0 35px #d6a84b22}
+.tier-emblem span{font-size:34px}.tier-emblem small{font-size:10px;letter-spacing:2px;font-weight:800}
+.member-overview{border:1px solid #303c52;border-radius:18px;background:linear-gradient(145deg,#171f2e,#121824);padding:28px 30px}
+.member-overview-top{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:22px;border-bottom:1px solid #2b3548}
+.member-label,.member-id{font-size:11px;letter-spacing:1.5px;color:#93a4bc;font-weight:700}.member-overview h2{font-size:25px;margin:7px 0 12px}.member-id{text-align:right}.member-id strong{display:block;color:#e5e7eb;font-size:17px;margin-top:8px;letter-spacing:0}
+.member-details-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;padding:25px 0}
+.member-details-grid div{display:flex;flex-direction:column;gap:7px;min-width:0}.member-details-grid span{font-size:12px;color:#91a0b6}.member-details-grid strong{font-size:14px;overflow-wrap:anywhere}
+.member-renew-row{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:18px 20px;border-radius:13px;background:#202b3d}
+.member-renew-row p{margin:5px 0 0;color:#9eacc0;font-size:13px}.member-renew-row button,.reward-save{border:0;border-radius:9px;background:#eab308;color:#171717;font-weight:800;padding:12px 18px;cursor:pointer;white-space:nowrap}
+.member-shortcuts{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:20px}
+.member-shortcut{display:flex;align-items:center;gap:16px;text-decoration:none;color:#f8fafc;padding:22px;border:1px solid #303b51;border-radius:16px;background:#151d2b;transition:.2s}
+.member-shortcut:hover{transform:translateY(-3px);border-color:#7478f5;background:#1b2435}
+.shortcut-icon{width:52px;height:52px;display:grid;place-items:center;border-radius:14px;background:#302e62;color:#c7c9ff;font-size:25px;flex-shrink:0}
+.rewards-shortcut .shortcut-icon{background:#47331b}.member-shortcut>span:nth-child(2){display:flex;flex-direction:column;gap:4px;flex:1}
+.member-shortcut small{font-size:10px;letter-spacing:1.2px;color:#a5b4fc;font-weight:800}.member-shortcut strong{font-size:18px}.member-shortcut em{font-size:12px;color:#9eacc0;font-style:normal}.member-shortcut>b{font-size:22px;color:#a5b4fc}
+@media(max-width:700px){.member-hero{padding:23px}.member-hero h1{font-size:27px}.tier-emblem{width:82px;height:82px}.member-details-grid{grid-template-columns:1fr 1fr}.member-shortcuts{grid-template-columns:1fr}.member-renew-row{align-items:flex-start;flex-direction:column}}
