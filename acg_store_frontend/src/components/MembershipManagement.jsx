@@ -3,16 +3,7 @@ import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import '../styles/MembershipManagement.css';
 
-// Display dates consistently as DD/MM/YYYY (day/month/year).
-const fmt = (v) => {
-  if (!v) return 'Not set';
-  const date = new Date(v);
-  if (Number.isNaN(date.getTime())) return 'Not set';
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
-  return `${day}/${month}/${year}`;
-};
+const fmt = (v) => v ? new Date(v).toLocaleDateString() : 'Not set';
 
 export default function MembershipManagement({ admin = false }) {
   const [rows, setRows] = useState([]);
