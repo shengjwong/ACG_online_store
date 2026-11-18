@@ -264,7 +264,6 @@ function App() {
                       {cartCount > 0 && <span className="cart-badge">{cartCount > 99 ? '99+' : cartCount}</span>}
                     </Link>
                     <Link to="/my-orders" className="nav-link-plain">My Orders</Link>
-                    <Link to="/payments" className="nav-link-plain">Payments</Link>
                     <Link to="/membership" className="btn-admin">Member</Link>
                   </>
                 )}

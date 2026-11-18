@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\MembershipReceiptMail;
 use App\Models\MembershipPayment;
 use App\Models\User;
 use App\Services\PayPalService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -150,7 +152,15 @@ class MembershipController extends Controller
                 ->update(['expires_at' => $user->membership_expiry->copy()->addMonths(3)]);
         });
 
-        return response()->json(['status' => 'success', 'message' => 'RM15 payment successful. Membership renewed for three months.', 'data' => $this->data($request->user()->fresh())]);
+        // Email the receipt. A mail failure must never undo a completed payment.
+        $member = $request->user()->fresh();
+        try {
+            Mail::to($member->email)->send(new MembershipReceiptMail($payment->fresh(), $member));
+        } catch (Throwable $e) {
+            report($e);
+        }
+
+        return response()->json(['status' => 'success', 'message' => 'RM15 payment successful. Membership renewed for three months. A receipt has been sent to your email.', 'data' => $this->data($member)]);
     }
 
     public function cancelRenewal(Request $request)

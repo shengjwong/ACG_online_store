@@ -44,10 +44,9 @@ export default function MembershipPaymentResult({ mode }) {
         <h1>{mode === 'cancel' ? 'Renewal Cancelled' : 'Membership Payment'}</h1>
         {error ? <p className="m-alert error">{error}</p> : <p className="m-alert">{message}</p>}
         {membership && !error && <p><strong>New membership expiry:</strong> {membership.membership_expiry ? new Date(membership.membership_expiry).toLocaleDateString() : 'Updated'}</p>}
-        {!error && mode === 'success' && <p>Your receipt is available under Payment History after this successful payment.</p>}
+        {!error && mode === 'success' && <p>A receipt for this payment has been sent to your email.</p>}
         <div style={{display:'flex',gap:16,flexWrap:'wrap',marginTop:16}}>
           <Link to="/membership">Return to My Membership</Link>
-          {membership && !error && <Link to="/payments">View Payment Receipt</Link>}
         </div>
       </section>
     </main>
