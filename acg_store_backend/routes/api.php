@@ -6,7 +6,14 @@ use App\Http\Controllers\RewardsController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\UserController;
+<<<<<<< HEAD
 use App\Models\Product;
+=======
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\NewPasswordController;
+>>>>>>> 416ac7fd82d54ee439d682923001d8c6e268b6e9
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -14,10 +21,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
-use App\Http\Controllers\Auth\PasswordResetLinkController;
-use App\Http\Controllers\Auth\NewPasswordController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\OrderController;
 
 // Step 1: Send 6-Digit Registration OTP to User Email
 Route::post('/register/send-otp', function (Request $request) {
@@ -131,7 +134,7 @@ Route::post('/register', function (Request $request) {
         'message' => 'Registration successful',
         'access_token' => $token,
         'token_type' => 'Bearer',
-        'user' => $user
+        'user' => $user,
     ], 201);
 });
 
@@ -156,7 +159,7 @@ Route::post('/login', function (Request $request) {
         'message' => 'Login successful',
         'access_token' => $token,
         'token_type' => 'Bearer',
-        'user' => $user
+        'user' => $user,
     ], 200);
 });
 
@@ -166,13 +169,12 @@ Route::get('/products/{product}', [ProductController::class, 'show']);
 
 // Protected Routes (Sanctum Authenticated)
 Route::middleware('auth:sanctum')->group(function () {
-
     Route::post('/logout', function (Request $request) {
         $request->user()->tokens()->delete();
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Logged out successfully'
+            'message' => 'Logged out successfully',
         ], 200);
     });
 
@@ -189,6 +191,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/membership/renew/cancel', [MembershipController::class, 'cancelRenewal']);
     Route::get('/membership/me', [MembershipController::class, 'mine']);
     Route::get('/membership/payment-history', [MembershipController::class, 'paymentHistory']);
+
+    // Points & Rewards
     Route::get('/points', [RewardsController::class, 'points']);
     Route::get('/rewards', [RewardsController::class, 'index']);
     Route::post('/rewards/{rewardProduct}/redeem', [RewardsController::class, 'redeem']);
@@ -198,6 +202,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/admin/rewards/{rewardProduct}', [RewardsController::class, 'update']);
     Route::delete('/admin/rewards/{rewardProduct}', [RewardsController::class, 'destroy']);
     Route::get('/admin/redemptions', [RewardsController::class, 'adminRedemptions']);
+
+    // Admin Membership Management
     Route::get('/admin/memberships', [MembershipController::class, 'index']);
     Route::get('/admin/memberships/{id}', [MembershipController::class, 'show']);
     Route::post('/admin/memberships/{id}/deactivate', [MembershipController::class, 'deactivate']);
@@ -206,11 +212,12 @@ Route::middleware('auth:sanctum')->group(function () {
     // Protected User Management CRUD
     Route::apiResource('users', UserController::class);
 
-    // Protected Product Admin Operations (Create, Update, Delete)
+    // Protected Product Admin Operations
     Route::post('/products', [ProductController::class, 'store']);
     Route::put('/products/{product}', [ProductController::class, 'update']);
     Route::delete('/products/{product}', [ProductController::class, 'destroy']);
 
+<<<<<<< HEAD
     // Homepage Featured Slides Manager (Admin Only)
     Route::post('/admin/featured-slides', function (Request $request) {
         if ($request->user()->role !== 'admin') {
@@ -236,11 +243,16 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Cart (Oscar)
+=======
+    // Cart
+>>>>>>> 416ac7fd82d54ee439d682923001d8c6e268b6e9
     Route::get('/cart', [CartController::class, 'index']);
     Route::post('/cart', [CartController::class, 'store']);
     Route::delete('/cart', [CartController::class, 'clear']);
     Route::put('/cart/{cartItem}', [CartController::class, 'update']);
     Route::delete('/cart/{cartItem}', [CartController::class, 'destroy']);
+
+    // Orders
     Route::get('/my-orders', [OrderController::class, 'mine']);
     Route::put('/my-orders/{order}/address', [OrderController::class, 'updateAddress']);
     Route::post('/my-orders/{order}/cancel', [OrderController::class, 'cancelOrder']);
@@ -248,7 +260,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admin/orders', [OrderController::class, 'adminIndex']);
     Route::put('/admin/orders/{order}', [OrderController::class, 'adminUpdate']);
 
-    // Payments via PayPal sandbox (Oscar)
+    // Payments via PayPal sandbox
     Route::post('/checkout', [PaymentController::class, 'checkout']);
     Route::get('/payments', [PaymentController::class, 'index']);
     Route::get('/payments/{payment}', [PaymentController::class, 'show']);

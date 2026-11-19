@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import '../styles/MembershipManagement.css';
+import { formatDate } from '../utils/dateFormat';
 
-const fmt = (v) => v ? new Date(v).toLocaleDateString() : 'Not set';
+const fmt = (v) => formatDate(v, 'Not set');
 
 export default function MembershipManagement({ admin = false }) {
   const [rows, setRows] = useState([]);
@@ -53,6 +54,7 @@ export default function MembershipManagement({ admin = false }) {
   };
 
   if (!admin) {
+    const registered = Boolean(mine?.membership_registered_at);
     const active = mine?.membership_status === 'active';
     const tier = mine?.membership_tier || 'Bronze';
     return (
@@ -71,7 +73,13 @@ export default function MembershipManagement({ admin = false }) {
         {error && <p className="m-alert error">{error}</p>}
         {message && <p className="m-alert">{message}</p>}
 
-        {mine ? (
+        {mine && !registered ? (
+          <section className="m-card">
+            <h2>Join ACG Membership</h2>
+            <p>Register for RM15 and enjoy 3 months of membership benefits.</p>
+            <Link to="/membership/register" className="member-register-link">Register Membership · RM15</Link>
+          </section>
+        ) : mine ? (
           <>
             <section className="member-overview">
               <div className="member-overview-top">
@@ -132,7 +140,9 @@ export default function MembershipManagement({ admin = false }) {
             <tbody>{rows.map(m => <tr key={m.id}><td>{m.name}<small>{m.email}</small></td><td>{m.membership_tier}</td><td><span className={'m-status ' + m.membership_status}>{m.membership_status}</span></td><td>{fmt(m.membership_expiry)}</td><td><button onClick={async () => { try { const r = await api.get('/admin/memberships/' + m.id); setSelected(r.data.data); } catch (e) { setError(e.response?.data?.message || 'Unable to view profile.'); } }}>View</button></td></tr>)}</tbody>
           </table></div>
         </section>
-        {selected && <section className="m-card"><h2>Member Profile</h2><h3>{selected.name}</h3><p>{selected.email}</p><p><b>Member ID:</b> {selected.id}</p><p><b>Phone:</b> {selected.phone_number || 'Not provided'}</p><p><b>Tier:</b> {selected.membership_tier}</p><p><b>Status:</b> {selected.membership_status}</p><p><b>Expiry:</b> {fmt(selected.membership_expiry)}</p><p><b>Joined:</b> {fmt(selected.created_at)}</p><button className="m-danger" disabled={selected.membership_status === 'inactive'} onClick={() => { if (window.confirm('Deactivate membership for ' + selected.name + '?')) action('/admin/memberships/' + selected.id + '/deactivate'); }}>Deactivate Membership</button><small>Deactivation does not delete or disable the login account.</small></section>}
+        {selected && <section className="m-card"><h2>Member Profile</h2><h3>{selected.name}</h3><p>{selected.email}</p><p><b>Member ID:</b> {selected.id}</p><p><b>Phone:</b> {selected.phone_number || 'Not provided'}</p><p><b>Tier:</b> {selected.membership_tier}</p><p><b>Status:</b> {selected.membership_status}</p><p><b>Expiry:</b> {fmt(selected.membership_expiry)}</p><p><b>Joined:</b> {fmt(selected.created_at)}</p>{selected.membership_status !== 'inactive' && <button className="m-danger" onClick={() => { if (window.confirm('Deactivate membership for ' + selected.name + '?')) action('/admin/memberships/' + selected.id + '/deactivate'); }}>Deactivate Membership</button>}
+          {selected.membership_status === 'inactive' && <p>This membership has already been deactivated. View only.</p>}
+          <small>Deactivation does not delete or disable the login account.</small></section>}
       </div>
     </main>
   );

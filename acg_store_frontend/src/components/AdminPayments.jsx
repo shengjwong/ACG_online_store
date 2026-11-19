@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
 import '../styles/Shop.css';
+import { formatDateTime } from '../utils/dateFormat';
 
 const STATUSES = ['pending', 'successful', 'failed', 'refunded'];
 
@@ -93,7 +94,7 @@ function AdminPayments() {
             {payments.map((p) => (
               <tr key={p.id}>
                 <td>{p.id}</td>
-                <td>{new Date(p.created_at).toLocaleString()}</td>
+                <td>{formatDateTime(p.created_at)}</td>
                 <td>{p.order?.user?.name}<div className="shop-muted">{p.order?.user?.email}</div></td>
                 <td>{p.order?.order_number}</td>
                 <td>RM {Number(p.amount).toFixed(2)}</td>

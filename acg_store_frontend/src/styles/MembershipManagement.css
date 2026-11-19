@@ -21,3 +21,36 @@
 .rewards-shortcut .shortcut-icon{background:#47331b}.member-shortcut>span:nth-child(2){display:flex;flex-direction:column;gap:4px;flex:1}
 .member-shortcut small{font-size:10px;letter-spacing:1.2px;color:#a5b4fc;font-weight:800}.member-shortcut strong{font-size:18px}.member-shortcut em{font-size:12px;color:#9eacc0;font-style:normal}.member-shortcut>b{font-size:22px;color:#a5b4fc}
 @media(max-width:700px){.member-hero{padding:23px}.member-hero h1{font-size:27px}.tier-emblem{width:82px;height:82px}.member-details-grid{grid-template-columns:1fr 1fr}.member-shortcuts{grid-template-columns:1fr}.member-renew-row{align-items:flex-start;flex-direction:column}}
+
+/* Membership registration page - modern layout */
+.m-registration-page{max-width:1540px;margin:26px auto 60px}
+.m-register-modern{padding:34px 4%;border-radius:20px;background:linear-gradient(145deg,#151d2b,#111827);border-color:#293449}
+.m-register-heading{display:flex;align-items:center;gap:16px;margin-bottom:8px}
+.m-register-heading h1{margin:0;font-size:clamp(26px,3vw,38px);font-weight:800}
+.m-register-crown{display:grid;place-items:center;color:#fbbf24;font-size:42px;line-height:1}
+.m-register-intro{margin:12px 0 26px;padding:0 0 20px!important;border-bottom:1px solid #303b4e;color:#e5e7eb;font-size:16px;line-height:1.6}
+.m-register-form{display:flex;flex-direction:column;gap:18px}
+.m-register-field{display:grid;grid-template-columns:minmax(190px,260px) minmax(0,1fr);align-items:center;gap:24px}
+.m-register-field label{display:flex;align-items:center;gap:12px;color:#f8fafc;font-size:16px;font-weight:750}
+.m-register-field label>span{width:28px;text-align:center;color:#fbbf24;font-size:24px}
+.m-register-field label b{color:#f87171;margin-left:-8px}
+.m-register-field input{width:100%;min-width:0;box-sizing:border-box;background:#1d2737;border:1.5px solid #4b586d;border-radius:12px;color:#f8fafc;padding:15px 18px;font-size:16px;outline:none;transition:border-color .2s,box-shadow .2s}
+.m-register-field input:focus{border-color:#fbbf24;box-shadow:0 0 0 3px #fbbf2420}
+.m-register-field input[readonly]{background:#303846;color:#d1d5db;cursor:not-allowed}
+.m-registration-details{display:flex;align-items:center;gap:30px;margin-top:8px;padding:24px 28px;border:2px solid #facc15;border-radius:18px;background:linear-gradient(110deg,#292a2a,#1b202a)}
+.m-registration-medal{flex:0 0 150px;display:grid;place-items:center;min-height:125px;border-right:1px solid #51515a;color:#f5b77b;font-size:76px;text-shadow:0 4px 0 #9a5735,0 0 20px #f59e0b55}
+.m-registration-info{flex:1;min-width:0}
+.m-registration-info h2{margin:0 0 22px;color:#fbbf24;font-size:24px}
+.m-registration-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.m-registration-fact{display:flex;align-items:center;justify-content:center;gap:16px;padding:4px 18px;border-right:1px solid #51515a;min-width:0}
+.m-registration-fact:first-child{justify-content:flex-start;padding-left:0}
+.m-registration-fact:last-child{border-right:0}
+.m-fact-icon{color:#fbbf24;font-size:34px;line-height:1}
+.m-registration-fact div{display:flex;flex-direction:column;gap:5px;min-width:0}
+.m-registration-fact small{color:#d1d5db;font-size:14px}
+.m-registration-fact strong{color:#f8fafc;font-size:22px;overflow-wrap:anywhere}
+.m-register-actions{display:flex;justify-content:flex-end;margin-top:4px}
+.m-register-actions button{display:inline-flex;align-items:center;justify-content:center;gap:14px;min-width:300px;padding:15px 24px;border-radius:12px;background:#facc15;color:#111827;font-size:17px;font-weight:850;box-shadow:0 6px 18px #0003}
+.m-register-actions button:hover:not(:disabled){background:#eab308;transform:translateY(-1px)}
+.m-paypal-mark{font-size:25px;font-style:italic;font-weight:950;color:#0756a5;text-shadow:2px 1px 0 #52a7e8}
+@media(max-width:760px){.m-register-modern{padding:24px 20px}.m-register-field{grid-template-columns:1fr;gap:8px}.m-registration-details{align-items:flex-start;gap:16px;padding:20px 16px}.m-registration-medal{flex-basis:70px;min-height:90px;font-size:48px}.m-registration-facts{grid-template-columns:1fr;gap:14px}.m-registration-fact,.m-registration-fact:first-child{justify-content:flex-start;padding:0;border-right:0}.m-registration-info h2{font-size:20px;margin-bottom:16px}.m-registration-fact strong{font-size:18px}.m-register-actions button{width:100%;min-width:0}.m-register-heading h1{font-size:26px}}

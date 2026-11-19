@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import api from '../api/axios';
 import '../styles/Shop.css';
 import '../styles/PaymentReceipt.css';
+import { formatDateTime } from '../utils/dateFormat';
 
 function PaymentHistory() {
   const [payments, setPayments] = useState([]);
@@ -51,7 +52,7 @@ function PaymentHistory() {
       </div>
       {visible.length === 0 ? <div className="shop-card shop-empty">No payments yet.</div> :
         <div className="shop-card shop-table-wrap no-print"><table className="shop-table"><thead><tr><th>Date</th><th>Type / Description</th><th>Method</th><th>Amount</th><th>Status</th><th>Transaction ID</th><th>Receipt</th></tr></thead><tbody>
-          {visible.map(p=><tr key={`${p.record_type}-${p.id}`}><td>{new Date(p.paid_at || p.created_at).toLocaleString()}</td><td>{p.record_type === 'membership' ? 'Membership Renewal (3 months)' : (p.description || p.order?.order_number)}</td><td>{p.payment_method || 'PayPal'}</td><td>RM {Number(p.amount).toFixed(2)}</td><td><span className={`badge badge-${p.payment_status}`}>{p.payment_status}</span></td><td className="shop-muted">{p.transaction_id || '-'}</td><td>{p.record_type === 'membership' && p.payment_status === 'successful' ? <button className="receipt-view-btn" onClick={() => setReceipt(p)}>View Receipt</button> : '—'}</td></tr>)}
+          {visible.map(p=><tr key={`${p.record_type}-${p.id}`}><td>{formatDateTime(p.paid_at || p.created_at)}</td><td>{p.record_type === 'membership' ? 'Membership Renewal (3 months)' : (p.description || p.order?.order_number)}</td><td>{p.payment_method || 'PayPal'}</td><td>RM {Number(p.amount).toFixed(2)}</td><td><span className={`badge badge-${p.payment_status}`}>{p.payment_status}</span></td><td className="shop-muted">{p.transaction_id || '-'}</td><td>{p.record_type === 'membership' && p.payment_status === 'successful' ? <button className="receipt-view-btn" onClick={() => setReceipt(p)}>View Receipt</button> : '—'}</td></tr>)}
         </tbody></table></div>}
       {receipt && (
         <div className="receipt-overlay" role="dialog" aria-modal="true" aria-label="Membership payment receipt">
@@ -65,7 +66,7 @@ function PaymentHistory() {
             <div className="receipt-divider"></div>
             <div className="receipt-details">
               <div><span>Receipt No.</span><strong>{receipt.receipt_number || `ACG-MEM-${String(receipt.id).replace('membership-','').padStart(6,'0')}`}</strong></div>
-              <div><span>Payment Date</span><strong>{new Date(receipt.paid_at || receipt.created_at).toLocaleString()}</strong></div>
+              <div><span>Payment Date</span><strong>{formatDateTime(receipt.paid_at || receipt.created_at)}</strong></div>
               <div><span>Description</span><strong>Membership Renewal — 3 Months</strong></div>
               <div><span>Payment Method</span><strong>PayPal Sandbox</strong></div>
               <div><span>Currency</span><strong>{receipt.currency || 'MYR'}</strong></div>
