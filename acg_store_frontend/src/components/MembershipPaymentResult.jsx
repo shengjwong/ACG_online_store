@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import api from '../api/axios';
 import '../styles/MembershipManagement.css';
+import { formatDate } from '../utils/dateFormat';
 
 export default function MembershipPaymentResult({ mode }) {
   const [params] = useSearchParams();
@@ -43,7 +44,7 @@ export default function MembershipPaymentResult({ mode }) {
       <section className="m-card">
         <h1>{mode === 'cancel' ? 'Renewal Cancelled' : 'Membership Payment'}</h1>
         {error ? <p className="m-alert error">{error}</p> : <p className="m-alert">{message}</p>}
-        {membership && !error && <p><strong>New membership expiry:</strong> {membership.membership_expiry ? new Date(membership.membership_expiry).toLocaleDateString() : 'Updated'}</p>}
+        {membership && !error && <p><strong>New membership expiry:</strong> {membership.membership_expiry ? formatDate(membership.membership_expiry, 'Updated') : 'Updated'}</p>}
         {!error && mode === 'success' && <p>A receipt for this payment has been sent to your email.</p>}
         <div style={{display:'flex',gap:16,flexWrap:'wrap',marginTop:16}}>
           <Link to="/membership">Return to My Membership</Link>

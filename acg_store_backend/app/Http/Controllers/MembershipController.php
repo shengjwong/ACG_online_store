@@ -26,7 +26,10 @@ class MembershipController extends Controller
         abort_unless($user->role === 'member', 403, 'Only member accounts can register.');
 
         if ($user->membership_registered_at) {
-            return response()->json(['status' => 'error', 'message' => 'The free membership registration can only be used once. Please renew for RM15 per 3 months.'], 409);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'You have already registered. Please use membership renewal.',
+            ], 409);
         }
 
         $validated = $request->validate([
@@ -34,21 +37,11 @@ class MembershipController extends Controller
             'phone_number' => 'nullable|string|max:30',
         ]);
 
-        DB::transaction(function () use ($user, $validated) {
-            $locked = User::whereKey($user->id)->lockForUpdate()->firstOrFail();
-            if ($locked->membership_registered_at) {
-                abort(409, 'The free membership registration can only be used once.');
-            }
-            if (isset($validated['name'])) $locked->name = $validated['name'];
-            if (array_key_exists('phone_number', $validated)) $locked->phone_number = $validated['phone_number'];
-            $locked->membership_tier = 'Bronze';
-            $locked->membership_status = 'active';
-            $locked->membership_registered_at = now();
-            $locked->membership_expiry = now()->addMonth();
-            $locked->save();
-        });
+        if (isset($validated['name'])) $user->name = $validated['name'];
+        if (array_key_exists('phone_number', $validated)) $user->phone_number = $validated['phone_number'];
+        $user->save();
 
-        return response()->json(['status' => 'success', 'message' => 'Free membership activated for one month.', 'data' => $this->data($user->fresh())], 201);
+        return $this->createMembershipCheckout($user, 'registration');
     }
 
     public function mine(Request $request)
@@ -59,19 +52,20 @@ class MembershipController extends Controller
     public function index(Request $request)
     {
         $this->admin($request);
-        return response()->json(['status' => 'success', 'data' => User::where('role', 'member')->latest()->get()->map(fn ($u) => $this->data($u))]);
+        return response()->json(['status' => 'success', 'data' => User::where('role', 'member')->whereNotNull('membership_registered_at')->latest()->get()->map(fn ($u) => $this->data($u))]);
     }
 
     public function show(Request $request, $id)
     {
         $this->admin($request);
-        return response()->json(['status' => 'success', 'data' => $this->data(User::where('role', 'member')->findOrFail($id))]);
+        return response()->json(['status' => 'success', 'data' => $this->data(User::where('role', 'member')->whereNotNull('membership_registered_at')->findOrFail($id))]);
     }
 
     public function deactivate(Request $request, $id)
     {
         $this->admin($request);
-        $user = User::where('role', 'member')->findOrFail($id);
+        $user = User::where('role', 'member')->whereNotNull('membership_registered_at')->findOrFail($id);
+        abort_unless(in_array($this->data($user)['membership_status'], ['active', 'expired'], true), 409, 'This membership is already inactive.');
         $user->membership_status = 'inactive';
         $user->save();
         return response()->json(['status' => 'success', 'message' => 'Membership deactivated.', 'data' => $this->data($user->fresh())]);
@@ -87,26 +81,53 @@ class MembershipController extends Controller
     {
         $user = $request->user();
         abort_unless($user->role === 'member', 403, 'Only members can renew.');
+        abort_unless($user->membership_registered_at, 409, 'Please register your membership first.');
+
+        return $this->createMembershipCheckout($user, 'renewal');
+    }
+
+    private function createMembershipCheckout(User $user, string $type)
+    {
         $payment = MembershipPayment::create([
-            'user_id' => $user->id, 'amount' => self::RENEWAL_PRICE,
-            'currency' => self::CURRENCY, 'status' => 'pending',
+            'user_id' => $user->id,
+            'amount' => self::RENEWAL_PRICE,
+            'currency' => self::CURRENCY,
+            'status' => 'pending',
         ]);
 
         try {
             $frontend = rtrim(config('services.paypal.frontend_url'), '/');
+            $itemName = $type === 'registration'
+                ? 'Membership Registration (3 months)'
+                : 'Membership Renewal (3 months)';
+
             $paypal = $this->paypal->createOrder(
                 'MEM-' . $user->id . '-' . $payment->id . '-' . Str::lower(Str::random(5)),
-                self::RENEWAL_PRICE, 0,
-                [['name' => 'Membership Renewal (3 months)', 'quantity' => 1, 'unit_price' => self::RENEWAL_PRICE]],
+                self::RENEWAL_PRICE,
+                0,
+                [['name' => $itemName, 'quantity' => 1, 'unit_price' => self::RENEWAL_PRICE]],
                 $frontend . '/membership/payment/success?membership_payment_id=' . $payment->id,
                 $frontend . '/membership/payment/cancel?membership_payment_id=' . $payment->id
             );
+
             $payment->update(['paypal_order_id' => $paypal['id']]);
-            return response()->json(['status' => 'success', 'payment_id' => $payment->id, 'approval_url' => $paypal['approval_url'], 'amount' => self::RENEWAL_PRICE, 'currency' => self::CURRENCY], 201);
+
+            return response()->json([
+                'status' => 'success',
+                'payment_id' => $payment->id,
+                'approval_url' => $paypal['approval_url'],
+                'amount' => self::RENEWAL_PRICE,
+                'currency' => self::CURRENCY,
+                'payment_type' => $type,
+            ], 201);
         } catch (Throwable $e) {
             report($e);
             $payment->update(['status' => 'failed']);
-            return response()->json(['status' => 'error', 'message' => 'Unable to start PayPal payment. Check PayPal Sandbox credentials in .env.'], 502);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unable to start PayPal payment. Check PayPal Sandbox credentials in .env.',
+            ], 502);
         }
     }
 
@@ -140,8 +161,16 @@ class MembershipController extends Controller
             $lockedPayment->update(['status' => 'successful', 'capture_id' => $capture['id'], 'paid_at' => now()]);
             $user = User::whereKey($request->user()->id)->lockForUpdate()->firstOrFail();
             $expiry = $user->membership_expiry ? Carbon::parse($user->membership_expiry) : null;
-            $base = ($user->membership_status === 'active' && $expiry && $expiry->isFuture()) ? $expiry : now();
-            // Renewal preserves the existing membership tier and accumulated spend.
+            $base = ($user->membership_status === 'active' && $expiry && $expiry->isFuture())
+                ? $expiry
+                : now();
+
+            // The first successful payment registers the membership; later payments renew it.
+            if (!$user->membership_registered_at) {
+                $user->membership_registered_at = now();
+                $user->membership_tier = $user->membership_tier ?: 'Bronze';
+            }
+            // Preserve the existing tier, accumulated spend and points.
             $user->membership_status = 'active';
             $user->membership_expiry = $base->copy()->addMonthsNoOverflow(3);
             $user->save();
@@ -183,7 +212,7 @@ class MembershipController extends Controller
                 'amount' => $p->amount,
                 'payment_status' => $p->status,
                 'transaction_id' => $p->capture_id,
-                'description' => 'Membership Renewal (3 months)',
+                'description' => 'Membership Payment (3 months)',
                 'receipt_number' => 'ACG-MEM-' . str_pad((string) $p->id, 6, '0', STR_PAD_LEFT),
                 'currency' => $p->currency,
             ]);

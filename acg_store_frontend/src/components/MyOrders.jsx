@@ -2,11 +2,12 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import '../styles/Shop.css';
+import { formatDate } from '../utils/dateFormat';
 
 const statusSteps = ['paid', 'processing', 'shipped', 'delivered', 'completed'];
 const labels = { paid: 'Paid', processing: 'Preparing', shipped: 'On the Way', delivered: 'Delivered', completed: 'Completed', cancelled: 'Cancelled' };
 const statusOptions = [...statusSteps, 'cancelled'];
-const date = (value) => value ? new Date(`${String(value).slice(0, 10)}T00:00:00`).toLocaleDateString('en-GB') : 'Not set';
+const date = (value) => formatDate(value, 'Not set');
 
 function MyOrders() {
   const [orders, setOrders] = useState([]);
@@ -82,7 +83,7 @@ function MyOrders() {
       const current = statusSteps.indexOf(order.order_status);
       const canEditAddress = ['paid', 'processing'].includes(order.order_status);
       return <section className="shop-card" key={order.id} style={{ marginBottom: 18 }}>
-        <div className="order-head"><div><strong>{order.order_number}</strong><div className="shop-muted">Order date: {new Date(order.created_at).toLocaleDateString('en-GB')}</div></div>
+        <div className="order-head"><div><strong>{order.order_number}</strong><div className="shop-muted">Order date: {formatDate(order.created_at)}</div></div>
           <div style={{ textAlign: 'right' }}><span className={`badge badge-${order.order_status}`}>{labels[order.order_status] || order.order_status}</span><div style={{ fontWeight: 800, marginTop: 5 }}>RM {Number(order.total_amount).toFixed(2)}</div></div>
         </div>
         <ul className="order-items">{(order.items || []).map((item) => <li key={item.id}>{item.product_name} × {item.quantity} — RM {Number(item.subtotal).toFixed(2)}</li>)}</ul>
@@ -110,7 +111,7 @@ function MyOrders() {
           {order.order_status === 'delivered' && <button type="button" className="shop-btn shop-btn-primary" disabled={busyId === order.id} onClick={() => confirmReceived(order)}>Confirm Received</button>}
         </div>}
         {order.order_status === 'cancelled' && <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}><span className="shop-btn" style={{ color: '#fca5a5', cursor: 'default' }}>Order Cancelled</span></div>}
-        {order.order_status === 'completed' && <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}><span className="shop-btn" style={{ color: '#86efac', cursor: 'default' }}>✓ Completed · {order.completed_at ? new Date(order.completed_at).toLocaleDateString('en-GB') : 'Confirmed'}</span></div>}
+        {order.order_status === 'completed' && <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}><span className="shop-btn" style={{ color: '#86efac', cursor: 'default' }}>✓ Completed · {order.completed_at ? formatDate(order.completed_at, 'Confirmed') : 'Confirmed'}</span></div>}
       </section>;
     })}
   </div>;

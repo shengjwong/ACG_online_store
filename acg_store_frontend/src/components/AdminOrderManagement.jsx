@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
 import '../styles/Shop.css';
+import { formatDateTime } from '../utils/dateFormat';
 
 const fmt = (v) => {
   if (!v) return '—';
@@ -81,7 +82,7 @@ function AdminOrderManagement() {
         <p className="shop-muted" style={{ marginTop: 8 }}><strong>Shipping Address:</strong> {o.shipping_address || 'Not provided'}</p>
         <ul className="order-items">{(o.items || []).map((item) => <li key={item.id}>{item.product_name} × {item.quantity}</li>)}</ul>
         <p><strong>Total: RM {Number(o.total_amount).toFixed(2)}</strong></p>
-        {o.order_status === 'completed' ? <p style={{ color: '#86efac' }}>Completed on {o.completed_at ? new Date(o.completed_at).toLocaleString('en-GB') : '—'}</p> : <>
+        {o.order_status === 'completed' ? <p style={{ color: '#86efac' }}>Completed on {o.completed_at ? formatDateTime(o.completed_at) : '—'}</p> : <>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 12 }}>
             <label>Order Status<select className="shop-select" value={d.order_status || 'processing'} onChange={(e) => updateDraft(o.id, 'order_status', e.target.value)}>
               <option value="processing">Preparing</option><option value="shipped">On the Way</option><option value="delivered">Delivered</option>
