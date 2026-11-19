@@ -2,25 +2,19 @@
 
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\MembershipController;
-<<<<<<< HEAD
 use App\Http\Controllers\RewardsController;
-=======
->>>>>>> 1f86f6a (Update membership backend)
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\NewPasswordController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
-use App\Http\Controllers\Auth\PasswordResetLinkController;
-use App\Http\Controllers\Auth\NewPasswordController;
-<<<<<<< HEAD
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\OrderController;
-=======
->>>>>>> 1f86f6a (Update membership backend)
 
 // Public Authentication Routes
 Route::post('/register', function (Request $request) {
@@ -47,7 +41,7 @@ Route::post('/register', function (Request $request) {
         'message' => 'Registration successful',
         'access_token' => $token,
         'token_type' => 'Bearer',
-        'user' => $user
+        'user' => $user,
     ], 201);
 });
 
@@ -72,7 +66,7 @@ Route::post('/login', function (Request $request) {
         'message' => 'Login successful',
         'access_token' => $token,
         'token_type' => 'Bearer',
-        'user' => $user
+        'user' => $user,
     ], 200);
 });
 
@@ -82,21 +76,15 @@ Route::get('/products/{product}', [ProductController::class, 'show']);
 
 // Protected Routes (Sanctum Authenticated)
 Route::middleware('auth:sanctum')->group(function () {
-<<<<<<< HEAD
-
     Route::post('/logout', function (Request $request) {
         $request->user()->tokens()->delete();
-=======
-    Route::post('/logout', function (Request $request) {$request->user()->tokens()->delete();
->>>>>>> 1f86f6a (Update membership backend)
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Logged out successfully'
+            'message' => 'Logged out successfully',
         ], 200);
     });
 
-<<<<<<< HEAD
     // User & Admin Profile + Password OTP Routes
     Route::get('/profile', [ProfileController::class, 'show']);
     Route::post('/profile/update', [ProfileController::class, 'updateProfile']);
@@ -110,6 +98,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/membership/renew/cancel', [MembershipController::class, 'cancelRenewal']);
     Route::get('/membership/me', [MembershipController::class, 'mine']);
     Route::get('/membership/payment-history', [MembershipController::class, 'paymentHistory']);
+
+    // Points & Rewards
     Route::get('/points', [RewardsController::class, 'points']);
     Route::get('/rewards', [RewardsController::class, 'index']);
     Route::post('/rewards/{rewardProduct}/redeem', [RewardsController::class, 'redeem']);
@@ -119,12 +109,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/admin/rewards/{rewardProduct}', [RewardsController::class, 'update']);
     Route::delete('/admin/rewards/{rewardProduct}', [RewardsController::class, 'destroy']);
     Route::get('/admin/redemptions', [RewardsController::class, 'adminRedemptions']);
-=======
-    // Membership Management
-    Route::post('/membership/register', [MembershipController::class, 'registerMembership']);
-    Route::get('/membership/me', [MembershipController::class, 'mine']);
-    Route::post('/membership/renew', [MembershipController::class, 'renew']);
->>>>>>> 1f86f6a (Update membership backend)
+
+    // Admin Membership Management
     Route::get('/admin/memberships', [MembershipController::class, 'index']);
     Route::get('/admin/memberships/{id}', [MembershipController::class, 'show']);
     Route::post('/admin/memberships/{id}/deactivate', [MembershipController::class, 'deactivate']);
@@ -133,29 +119,27 @@ Route::middleware('auth:sanctum')->group(function () {
     // Protected User Management CRUD
     Route::apiResource('users', UserController::class);
 
-    // Protected Product Admin Operations (Create, Update, Delete)
+    // Protected Product Admin Operations
     Route::post('/products', [ProductController::class, 'store']);
     Route::put('/products/{product}', [ProductController::class, 'update']);
     Route::delete('/products/{product}', [ProductController::class, 'destroy']);
 
-    // Cart (Oscar)
+    // Cart
     Route::get('/cart', [CartController::class, 'index']);
     Route::post('/cart', [CartController::class, 'store']);
     Route::delete('/cart', [CartController::class, 'clear']);
     Route::put('/cart/{cartItem}', [CartController::class, 'update']);
     Route::delete('/cart/{cartItem}', [CartController::class, 'destroy']);
-<<<<<<< HEAD
+
+    // Orders
     Route::get('/my-orders', [OrderController::class, 'mine']);
     Route::put('/my-orders/{order}/address', [OrderController::class, 'updateAddress']);
     Route::post('/my-orders/{order}/cancel', [OrderController::class, 'cancelOrder']);
     Route::post('/my-orders/{order}/confirm-received', [OrderController::class, 'confirmReceived']);
     Route::get('/admin/orders', [OrderController::class, 'adminIndex']);
     Route::put('/admin/orders/{order}', [OrderController::class, 'adminUpdate']);
-=======
-    Route::get('/my-orders', [CartController::class, 'orderHistory']);
->>>>>>> 1f86f6a (Update membership backend)
 
-    // Payments via PayPal sandbox (Oscar)
+    // Payments via PayPal sandbox
     Route::post('/checkout', [PaymentController::class, 'checkout']);
     Route::get('/payments', [PaymentController::class, 'index']);
     Route::get('/payments/{payment}', [PaymentController::class, 'show']);
