@@ -199,6 +199,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/admin/rewards/{rewardProduct}', [RewardsController::class, 'update']);
     Route::delete('/admin/rewards/{rewardProduct}', [RewardsController::class, 'destroy']);
     Route::get('/admin/redemptions', [RewardsController::class, 'adminRedemptions']);
+    Route::put('/admin/redemptions/{redemption}', [RewardsController::class, 'adminUpdateRedemption']);
+    Route::put('/my-redemptions/{redemption}/address', [RewardsController::class, 'updateMyRedemptionAddress']);
 
     // Admin Membership Management
     Route::get('/admin/memberships', [MembershipController::class, 'index']);

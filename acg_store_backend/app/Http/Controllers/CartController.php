@@ -42,6 +42,8 @@ class CartController extends Controller
      */
     public function store(Request $request)
     {
+        abort_if($request->user()->role === 'admin', 403, 'Admin accounts cannot add items to the cart.');
+
         $validated = $request->validate([
             'product_id' => 'required|integer|exists:products,id,deleted_at,NULL',
             'quantity' => 'nullable|integer|min:1',

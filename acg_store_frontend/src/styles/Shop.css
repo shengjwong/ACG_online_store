@@ -62,7 +62,9 @@
 
 /* Cart badge in navbar */
 .cart-link { position: relative; display: inline-block; margin-right: 8px; }
-.cart-badge { position: absolute; top: -9px; right: -16px; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 999px; background: #EF4444; color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
+.cart-badge { position: absolute; top: -9px; right: -9px; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 999px; background: #EF4444; color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
+/* The badge is positioned against its own Cart button (it was drifting to the Logout button) */
+.cart-btn { position: relative; }
 
 /* Category chips on the catalog */
 .category-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; max-width: 900px; margin: -0.8rem auto 2rem; padding: 0 1rem; }
@@ -490,3 +492,27 @@
     font-size: 1.3rem;
   }
 }
+/* Reward badge + redeem pop-up */
+.badge-reward { background: rgba(99,102,241,0.18); color: #A5B4FC; }
+.redeem-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.65); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1rem; }
+.redeem-modal { width: 100%; max-width: 440px; background: #151d2b; border: 1px solid #303b51; border-radius: 14px; padding: 1.5rem; color: #F8FAFC; }
+.redeem-modal h2 { margin: 0 0 0.6rem; }
+.redeem-summary { color: #CBD5E1; margin: 0 0 1rem; font-size: 0.95rem; }
+.redeem-modal label { display: block; font-size: 0.85rem; color: #94A3B8; margin-bottom: 0.4rem; }
+.redeem-modal textarea { width: 100%; box-sizing: border-box; background: #0B0E14; color: #F8FAFC; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 0.7rem; font-family: inherit; resize: vertical; margin-bottom: 1rem; }
+.redeem-actions { display: flex; justify-content: flex-end; gap: 0.6rem; }
+.redeem-actions button { border: 0; border-radius: 8px; padding: 0.6rem 1.1rem; font-weight: 700; cursor: pointer; }
+.redeem-cancel { background: transparent; color: #CBD5E1; border: 1px solid rgba(255,255,255,0.18) !important; }
+.redeem-confirm { background: #6366f1; color: #fff; }
+.redeem-actions button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Photos: fit the whole picture inside its frame instead of cropping it or spilling out of the card */
+.reward-admin-card .reward-admin-image,
+.member-reward-card .member-reward-photo { position: relative; overflow: hidden; }
+.reward-admin-card .reward-admin-image img,
+.member-reward-card .member-reward-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.product-image-container .product-image { object-fit: contain; }
+
+/* Homepage slider + Slide Manager photos: show the whole picture */
+.hero-slide-image { object-fit: contain; }
+.slide-select-img { object-fit: contain; }

@@ -355,16 +355,18 @@ function ProductList() {
                   </span>
                 </div>
 
-                <button
-                  className="btn-add-cart"
-                  disabled={isInactive || item.stock < 1}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleAddToCart(item);
-                  }}
-                >
-                  {item.stock < 1 ? 'Out of stock' : 'Add to Cart'}
-                </button>
+                {currentUser?.role !== 'admin' && (
+                  <button
+                    className="btn-add-cart"
+                    disabled={isInactive || item.stock < 1}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAddToCart(item);
+                    }}
+                  >
+                    {item.stock < 1 ? 'Out of stock' : 'Add to Cart'}
+                  </button>
+                )}
               </div>
             );
           })}
@@ -518,7 +520,7 @@ function App() {
                   </>
                 ) : (
                   <>
-                    <Link to="/cart" className="btn-admin">
+                    <Link to="/cart" className="btn-admin cart-btn">
                       Cart
                       {cartCount > 0 && <span className="cart-badge">{cartCount > 99 ? '99+' : cartCount}</span>}
                     </Link>
