@@ -22,9 +22,13 @@ class User extends Authenticatable
         'membership_tier',
         'membership_expiry',
         'membership_status',
+<<<<<<< HEAD
         'membership_registered_at',
         'total_spend',
         'points_balance',
+=======
+        'membership_status',
+>>>>>>> 1f86f6a (Update membership backend)
     ];
 
     protected $hidden = [
@@ -38,9 +42,13 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'membership_expiry' => 'datetime',
+<<<<<<< HEAD
             'membership_registered_at' => 'datetime',
             'total_spend' => 'decimal:2',
             'points_balance' => 'integer',
+=======
+            'membership_expiry' => 'datetime',
+>>>>>>> 1f86f6a (Update membership backend)
         ];
     }
 }
