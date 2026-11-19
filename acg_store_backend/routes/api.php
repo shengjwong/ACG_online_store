@@ -6,14 +6,11 @@ use App\Http\Controllers\RewardsController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\UserController;
-<<<<<<< HEAD
-use App\Models\Product;
-=======
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\NewPasswordController;
->>>>>>> 416ac7fd82d54ee439d682923001d8c6e268b6e9
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -217,7 +214,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/products/{product}', [ProductController::class, 'update']);
     Route::delete('/products/{product}', [ProductController::class, 'destroy']);
 
-<<<<<<< HEAD
     // Homepage Featured Slides Manager (Admin Only)
     Route::post('/admin/featured-slides', function (Request $request) {
         if ($request->user()->role !== 'admin') {
@@ -242,10 +238,7 @@ Route::middleware('auth:sanctum')->group(function () {
         ]);
     });
 
-    // Cart (Oscar)
-=======
     // Cart
->>>>>>> 416ac7fd82d54ee439d682923001d8c6e268b6e9
     Route::get('/cart', [CartController::class, 'index']);
     Route::post('/cart', [CartController::class, 'store']);
     Route::delete('/cart', [CartController::class, 'clear']);
