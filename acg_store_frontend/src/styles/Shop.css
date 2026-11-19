@@ -70,3 +70,423 @@
 .chip:hover { border-color: #6366F1; color: #fff; }
 .chip.active { background: #6366F1; border-color: #6366F1; color: #fff; }
 .chip-count { opacity: 0.7; font-size: 0.78rem; margin-left: 0.2rem; }
+
+/* Card highlight animation when jumping from slider */
+.product-card.card-highlight {
+  border-color: #6366F1 !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.45), 0 14px 30px rgba(0, 0, 0, 0.45) !important;
+  transform: translateY(-4px);
+}
+
+/* Auto-Running Hero Product Slider */
+.hero-slider {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto 2.75rem;
+  overflow: hidden;
+  background: radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.14), transparent 55%),
+              linear-gradient(135deg, #131823 0%, #171E2E 100%);
+  border: 1px solid rgba(99, 102, 241, 0.28);
+  border-radius: 16px;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.4);
+}
+
+.hero-slider-track {
+  display: flex;
+  transition: transform 0.55s cubic-bezier(0.25, 0.8, 0.25, 1);
+  width: 100%;
+}
+
+.hero-slide {
+  min-width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 2.25rem;
+  padding: 2.25rem 4rem 2.6rem;
+}
+
+.hero-slide-image-box {
+  flex: 0 0 320px;
+  height: 225px;
+  background: #0B0E14;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+}
+
+.hero-slide-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.hero-slider:hover .hero-slide-image {
+  transform: scale(1.03);
+}
+
+.hero-slide-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.hero-slide-badge {
+  background: rgba(99, 102, 241, 0.18);
+  color: #A5B4FC;
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.4px;
+}
+
+.hero-slide-title {
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: #F8FAFC;
+  margin: 0 0 0.5rem 0;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.hero-slide-title:hover {
+  color: #A5B4FC;
+}
+
+.hero-slide-desc {
+  color: #94A3B8;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0 0 1.25rem 0;
+  max-width: 540px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.hero-slide-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.hero-slide-price {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #D4AF37;
+}
+
+.hero-slide-btn {
+  background: #6366F1;
+  color: #FFFFFF;
+  border: none;
+  padding: 0.65rem 1.4rem;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.hero-slide-btn:hover {
+  background: #4F46E5;
+  transform: translateY(-1px);
+}
+
+/* Navigation Arrows */
+.hero-slider-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(11, 14, 20, 0.75);
+  color: #F8FAFC;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.hero-slider-arrow:hover {
+  background: #6366F1;
+  border-color: #6366F1;
+}
+
+.hero-slider-arrow.left {
+  left: 12px;
+}
+
+.hero-slider-arrow.right {
+  right: 12px;
+}
+
+/* Indicator Dots */
+.hero-slider-dots {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.45rem;
+}
+
+.hero-slider-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.25s ease;
+}
+
+.hero-slider-dot.active {
+  width: 22px;
+  background: #6366F1;
+}
+
+/* Admin Slide Manager Page */
+.slide-manager-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.slide-select-card {
+  background: #131823;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.slide-select-card.selected {
+  border-color: #6366F1;
+  background: linear-gradient(180deg, rgba(99, 102, 241, 0.12) 0%, #131823 100%);
+}
+
+.slide-select-card.unavailable {
+  opacity: 0.55;
+}
+
+.slide-select-img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: #0B0E14;
+  margin-bottom: 0.85rem;
+}
+
+.slide-toggle-btn {
+  width: 100%;
+  margin-top: 0.85rem;
+  padding: 0.6rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.slide-toggle-btn.included {
+  background: #6366F1;
+  color: #fff;
+}
+
+.slide-toggle-btn.excluded {
+  background: rgba(255, 255, 255, 0.08);
+  color: #CBD5E1;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.slide-toggle-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Product Lightbox / Quick-View Pop-up Modal */
+@keyframes modal-fade-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.product-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 8, 15, 0.85);
+  backdrop-filter: blur(6px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+.product-modal-box {
+  position: relative;
+  width: 100%;
+  max-width: 960px;
+  max-height: 90vh;
+  background: #131823;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  border-radius: 18px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+  display: flex;
+  overflow: hidden;
+  animation: modal-fade-in 0.2s ease-out;
+}
+
+.product-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(11, 14, 20, 0.85);
+  color: #F8FAFC;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.product-modal-close:hover {
+  background: #EF4444;
+  border-color: #EF4444;
+}
+
+.product-modal-image-wrap {
+  flex: 1.35;
+  background: #0B0E14;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  min-height: 360px;
+  max-height: 85vh;
+}
+
+.product-modal-image {
+  width: 100%;
+  height: 100%;
+  max-height: 75vh;
+  object-fit: contain;
+  border-radius: 10px;
+}
+
+.product-modal-details {
+  flex: 1;
+  padding: 2.25rem 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow-y: auto;
+  text-align: left;
+}
+
+.product-modal-title {
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: #F8FAFC;
+  margin: 0 0 0.9rem;
+  line-height: 1.25;
+}
+
+.product-modal-desc {
+  color: #CBD5E1;
+  font-size: 0.96rem;
+  line-height: 1.65;
+  margin: 0 0 1.75rem;
+  white-space: pre-line;
+  flex: 1;
+}
+
+.product-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.product-modal-price {
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: #D4AF37;
+}
+
+/* Responsive Mobile Layout */
+@media (max-width: 768px) {
+  .hero-slide {
+    flex-direction: column;
+    padding: 1.5rem 2.25rem 2.25rem;
+    text-align: center;
+    gap: 1.25rem;
+  }
+
+  .hero-slide-image-box {
+    flex: none;
+    width: 100%;
+    max-width: 300px;
+    height: 180px;
+  }
+
+  .hero-slide-content {
+    align-items: center;
+    text-align: center;
+  }
+
+  .product-modal-box {
+    flex-direction: column;
+    max-height: 92vh;
+  }
+
+  .product-modal-image-wrap {
+    flex: none;
+    min-height: 240px;
+    max-height: 45vh;
+    padding: 1rem;
+  }
+
+  .product-modal-image {
+    max-height: 40vh;
+  }
+
+  .product-modal-details {
+    padding: 1.35rem 1.25rem;
+  }
+
+  .product-modal-title {
+    font-size: 1.3rem;
+  }
+}

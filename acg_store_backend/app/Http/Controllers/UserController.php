@@ -11,6 +11,33 @@ use Illuminate\Validation\Rule;
 class UserController extends Controller
 {
     /**
+     * Reusable email domain validation rules (blocks typos like @gmal.com).
+     */
+    private function emailValidationRules(?int $ignoreUserId = null): array
+    {
+        $uniqueRule = $ignoreUserId
+            ? Rule::unique('users', 'email')->ignore($ignoreUserId)
+            : Rule::unique('users', 'email');
+
+        return [
+            $ignoreUserId ? 'sometimes' : 'required',
+            'string',
+            'email:rfc,dns',
+            'max:255',
+            $uniqueRule,
+            'regex:/^[a-zA-Z0-9._%+-]+@(gmail\.com|yahoo\.com|outlook\.com|hotmail\.com|icloud\.com|live\.com|[a-zA-Z0-9.-]+\.(edu\.my|com\.my|org|edu))$/i',
+        ];
+    }
+
+    private function emailValidationMessages(): array
+    {
+        return [
+            'email.regex' => 'Please enter a valid email domain (e.g. @gmail.com, @yahoo.com, @outlook.com, @hotmail.com, @icloud.com).',
+            'email.email' => 'Please enter a valid, active email address.',
+        ];
+    }
+
+    /**
      * Display a listing of all users & admins.
      */
     public function index(Request $request)
@@ -34,13 +61,14 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'name'          => 'required|string|max:255',
-            'email'         => 'required|email|unique:users,email',
+            'email'         => $this->emailValidationRules(),
             'password'      => 'required|string|min:8',
             'role'          => ['required', Rule::in(['admin', 'member'])],
             'phone_number'  => 'nullable|string|max:20|unique:users,phone_number',
-            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-        ]);
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
+        ], $this->emailValidationMessages());
 
+        $validated['email'] = strtolower(trim($validated['email']));
         $validated['password'] = Hash::make($validated['password']);
 
         if ($request->hasFile('profile_image')) {
@@ -88,12 +116,16 @@ class UserController extends Controller
 
         $validated = $request->validate([
             'name'          => 'sometimes|string|max:255',
-            'email'         => ['sometimes', 'email', Rule::unique('users')->ignore($user->id)],
+            'email'         => $this->emailValidationRules($user->id),
             'phone_number'  => ['nullable', 'string', 'max:20', Rule::unique('users')->ignore($user->id)],
             'password'      => 'nullable|string|min:8',
             'role'          => ['sometimes', Rule::in(['admin', 'member'])],
             'profile_image' => 'nullable',
-        ]);
+        ], $this->emailValidationMessages());
+
+        if (isset($validated['email'])) {
+            $validated['email'] = strtolower(trim($validated['email']));
+        }
 
         if (!empty($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
@@ -103,7 +135,7 @@ class UserController extends Controller
 
         if ($request->hasFile('profile_image')) {
             $request->validate([
-                'profile_image' => 'image|mimes:jpeg,png,jpg,webp|max:2048'
+                'profile_image' => 'image|mimes:jpeg,png,jpg,webp|max:10240'
             ]);
 
             if ($user->profile_image && $user->profile_image !== 'default.png' && Storage::disk('public')->exists($user->profile_image)) {
@@ -124,11 +156,11 @@ class UserController extends Controller
     }
 
     /**
-     * Delete user/admin.
+     * Delete user/admin permanently from the database.
      */
     public function destroy($id)
     {
-        $user = User::find($id);
+        $user = User::withTrashed()->find($id);
 
         if (!$user) {
             return response()->json(['message' => 'User not found'], 404);
@@ -142,11 +174,11 @@ class UserController extends Controller
             Storage::disk('public')->delete($user->profile_image);
         }
 
-        $user->delete();
+        $user->forceDelete();
 
         return response()->json([
             'status'  => 'success',
-            'message' => 'User deleted successfully'
+            'message' => 'User permanently deleted'
         ], 200);
     }
 }

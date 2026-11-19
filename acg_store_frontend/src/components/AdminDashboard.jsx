@@ -3,6 +3,17 @@ import api from '../api/axios';
 import { COUNTRY_CODES } from '../utils/countryCodes';
 import '../styles/AdminDashboard.css';
 
+const ALLOWED_EMAIL_REGEX =
+  /^[a-zA-Z0-9._%+-]+@(gmail\.com|yahoo\.com|outlook\.com|hotmail\.com|icloud\.com|live\.com|[a-zA-Z0-9.-]+\.(edu\.my|com\.my|org|edu))$/i;
+
+const validateEmailDomain = (email) => {
+  const clean = email.trim();
+  if (!ALLOWED_EMAIL_REGEX.test(clean)) {
+    return 'Please enter a valid email address ending in @gmail.com, @yahoo.com, @outlook.com, @hotmail.com, @icloud.com, etc.';
+  }
+  return null;
+};
+
 function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('products');
   const [products, setProducts] = useState([]);
@@ -12,14 +23,14 @@ function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Product Form State
+  // Product Form State (category_name is a free-text input)
   const [productEditingId, setProductEditingId] = useState(null);
   const [productForm, setProductForm] = useState({
     name: '',
     description: '',
     price: '',
     stock: '',
-    category_id: 1,
+    category_name: '',
     status: 'active',
   });
   const [productImageFile, setProductImageFile] = useState(null);
@@ -54,6 +65,15 @@ function AdminDashboard() {
     fetchData();
   }, []);
 
+  // Autocomplete suggestions from existing categories
+  const existingCategoryNames = Array.from(
+    new Set(
+      products
+        .map((p) => p.category?.name)
+        .filter(Boolean)
+    )
+  );
+
   // --- FILTERED & SORTED LISTS ---
   const filteredProducts = products
     .filter((item) => {
@@ -62,6 +82,7 @@ function AdminDashboard() {
       return (
         String(item.id).includes(q) ||
         item.name?.toLowerCase().includes(q) ||
+        item.category?.name?.toLowerCase().includes(q) ||
         item.description?.toLowerCase().includes(q) ||
         displayStatus?.toLowerCase().includes(q)
       );
@@ -85,7 +106,7 @@ function AdminDashboard() {
 
   // --- PRODUCT HANDLERS ---
   const resetProductForm = () => {
-    setProductForm({ name: '', description: '', price: '', stock: '', category_id: 1, status: 'active' });
+    setProductForm({ name: '', description: '', price: '', stock: '', category_name: '', status: 'active' });
     setProductImageFile(null);
     setProductEditingId(null);
   };
@@ -108,7 +129,12 @@ function AdminDashboard() {
       resetProductForm();
       fetchData();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to save product.');
+      const validationErrors = err.response?.data?.errors;
+      if (validationErrors) {
+        setError(Object.values(validationErrors).flat()[0]);
+      } else {
+        setError(err.response?.data?.message || 'Failed to save product.');
+      }
     }
   };
 
@@ -135,9 +161,15 @@ function AdminDashboard() {
     e.preventDefault();
     setError('');
 
+    const emailError = validateEmailDomain(userForm.email);
+    if (emailError) {
+      setError(emailError);
+      return;
+    }
+
     const data = new FormData();
     data.append('name', userForm.name);
-    data.append('email', userForm.email);
+    data.append('email', userForm.email.trim().toLowerCase());
     data.append('role', userForm.role);
 
     if (userForm.password) {
@@ -249,7 +281,7 @@ function AdminDashboard() {
           <div className="admin-card">
             <h2 style={{ marginBottom: '1.2rem' }}>{productEditingId ? 'Edit Product' : 'Add New Product'}</h2>
             <form onSubmit={handleProductSubmit} className="admin-form-grid">
-              <div className="form-full-width">
+              <div>
                 <label className="form-label">Product Name</label>
                 <input
                   type="text"
@@ -258,6 +290,23 @@ function AdminDashboard() {
                   onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
                   className="form-input"
                 />
+              </div>
+              <div>
+                <label className="form-label">Category (Type new or existing)</label>
+                <input
+                  type="text"
+                  list="category-suggestions"
+                  required
+                  placeholder="e.g. Figures, Manga, Cosplay..."
+                  value={productForm.category_name}
+                  onChange={(e) => setProductForm({ ...productForm, category_name: e.target.value })}
+                  className="form-input"
+                />
+                <datalist id="category-suggestions">
+                  {existingCategoryNames.map((catName) => (
+                    <option key={catName} value={catName} />
+                  ))}
+                </datalist>
               </div>
               <div className="form-full-width">
                 <label className="form-label">Description</label>
@@ -332,7 +381,7 @@ function AdminDashboard() {
               <input
                 type="text"
                 className="search-input"
-                placeholder="Search products by ID, name, or status..."
+                placeholder="Search products by ID, name, category, or status..."
                 value={productSearch}
                 onChange={(e) => setProductSearch(e.target.value)}
               />
@@ -355,6 +404,7 @@ function AdminDashboard() {
                 <th>ID</th>
                 <th>Image</th>
                 <th>Name</th>
+                <th>Category</th>
                 <th>Price</th>
                 <th>Stock</th>
                 <th>Status</th>
@@ -364,7 +414,7 @@ function AdminDashboard() {
             <tbody>
               {filteredProducts.length === 0 ? (
                 <tr>
-                  <td colSpan="7" style={{ textAlign: 'center', color: '#94A3B8', padding: '1.5rem' }}>
+                  <td colSpan="8" style={{ textAlign: 'center', color: '#94A3B8', padding: '1.5rem' }}>
                     No products found matching "<strong>{productSearch}</strong>".
                   </td>
                 </tr>
@@ -386,6 +436,7 @@ function AdminDashboard() {
                         />
                       </td>
                       <td style={{ fontWeight: 'bold' }}>{item.name}</td>
+                      <td style={{ color: '#A5B4FC' }}>{item.category?.name || '-'}</td>
                       <td style={{ color: '#4caf50', whiteSpace: 'nowrap' }}>RM {item.price}</td>
                       <td>{item.stock}</td>
                       <td>
@@ -397,7 +448,14 @@ function AdminDashboard() {
                         <button
                           onClick={() => {
                             setProductEditingId(item.id);
-                            setProductForm({ name: item.name, description: item.description || '', price: item.price, stock: item.stock, category_id: item.category_id || 1, status: item.status || 'active' });
+                            setProductForm({
+                              name: item.name,
+                              description: item.description || '',
+                              price: item.price,
+                              stock: item.stock,
+                              category_name: item.category?.name || '',
+                              status: item.status || 'active',
+                            });
                           }}
                           className="table-action-btn edit"
                         >
@@ -438,6 +496,7 @@ function AdminDashboard() {
                 <input
                   type="email"
                   required
+                  placeholder="example@gmail.com"
                   value={userForm.email}
                   onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
                   className="form-input"
@@ -457,7 +516,6 @@ function AdminDashboard() {
                 />
               </div>
 
-              {/* Country Code + Phone Input */}
               <div>
                 <label className="form-label">Phone Number</label>
                 <div className="phone-input-group">

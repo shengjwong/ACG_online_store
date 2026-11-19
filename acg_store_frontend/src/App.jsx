@@ -6,6 +6,7 @@ import Signup from './components/Signup';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 import AdminDashboard from './components/AdminDashboard';
+import AdminSlideManager from './components/AdminSlideManager';
 import Profile from './components/Profile';
 import Cart from './components/Cart';
 import MyOrders from './components/MyOrders';
@@ -28,7 +29,14 @@ function ProductList() {
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
   const [categoryId, setCategoryId] = useState('');
+  const [slideIndex, setSlideIndex] = useState(0);
+  const [isSliderPaused, setIsSliderPaused] = useState(false);
+  const [touchStartX, setTouchStartX] = useState(null);
+  const [highlightedId, setHighlightedId] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
   const navigate = useNavigate();
+  const currentUser = JSON.parse(localStorage.getItem('user'));
 
   const handleAddToCart = (item) => {
     if (!localStorage.getItem('access_token')) {
@@ -53,7 +61,60 @@ function ProductList() {
       .catch(() => setLoading(false));
   }, []);
 
-  // Categories come from the products themselves (each product includes its category)
+  // Close pop-up modal when pressing Escape
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setSelectedProduct(null);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // 1. Filter out inactive and out-of-stock products first
+  const inStockActiveProducts = products.filter(
+    (item) => item.status !== 'inactive' && Number(item.stock) > 0
+  );
+
+  // 2. Respect admin's selected slide products (is_featured flag from DB)
+  const explicitlyFeatured = inStockActiveProducts.filter((item) => Boolean(item.is_featured));
+  const availableSlideProducts =
+    explicitlyFeatured.length > 0 ? explicitlyFeatured : inStockActiveProducts;
+
+  // Auto-advance every 3.5 seconds unless hovered or modal is open
+  useEffect(() => {
+    if (isSliderPaused || selectedProduct || availableSlideProducts.length <= 1) return;
+
+    const timer = setInterval(() => {
+      setSlideIndex((prev) => (prev + 1) % availableSlideProducts.length);
+    }, 3500);
+
+    return () => clearInterval(timer);
+  }, [isSliderPaused, selectedProduct, availableSlideProducts.length]);
+
+  useEffect(() => {
+    if (slideIndex >= availableSlideProducts.length) {
+      setSlideIndex(0);
+    }
+  }, [availableSlideProducts.length, slideIndex]);
+
+  const nextSlide = () => {
+    setSlideIndex((prev) => (prev + 1) % availableSlideProducts.length);
+  };
+
+  const prevSlide = () => {
+    setSlideIndex((prev) => (prev - 1 + availableSlideProducts.length) % availableSlideProducts.length);
+  };
+
+  // Mobile touch swipe handlers
+  const handleTouchStart = (e) => setTouchStartX(e.touches[0].clientX);
+  const handleTouchEnd = (e) => {
+    if (touchStartX === null) return;
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (diff > 50) nextSlide();
+    if (diff < -50) prevSlide();
+    setTouchStartX(null);
+  };
+
   const categories = [];
   products.forEach((p) => {
     if (p.category && !categories.some((c) => c.id === p.category.id)) categories.push(p.category);
@@ -90,6 +151,109 @@ function ProductList() {
           {toast.text}
         </div>
       )}
+
+      {/* Auto-Running Featured Product Slider */}
+      {availableSlideProducts.length > 0 && (
+        <div
+          className="hero-slider"
+          onMouseEnter={() => setIsSliderPaused(true)}
+          onMouseLeave={() => setIsSliderPaused(false)}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          <div
+            className="hero-slider-track"
+            style={{ transform: `translateX(-${slideIndex * 100}%)` }}
+          >
+            {availableSlideProducts.map((item) => {
+              const imageUrl = item.image
+                ? `http://127.0.0.1:8000/storage/${item.image}`
+                : 'https://via.placeholder.com/400x300?text=No+Image';
+
+              return (
+                <div key={item.id} className="hero-slide">
+                  <div
+                    className="hero-slide-image-box"
+                    onClick={() => setSelectedProduct(item)}
+                    title="Click to enlarge image"
+                  >
+                    <img
+                      src={imageUrl}
+                      alt={item.name}
+                      className="hero-slide-image"
+                      onError={(e) => { e.target.src = 'https://via.placeholder.com/400x300?text=No+Image'; }}
+                    />
+                  </div>
+
+                  <div className="hero-slide-content">
+                    <span className="hero-slide-badge">
+                      {item.category?.name ? `${item.category.name} • ` : ''}In Stock ({item.stock})
+                    </span>
+                    <h2
+                      className="hero-slide-title"
+                      onClick={() => setSelectedProduct(item)}
+                    >
+                      {item.name}
+                    </h2>
+                    <p className="hero-slide-desc">
+                      {item.description || 'Available now in the ACG Store catalog.'}
+                    </p>
+                    <div className="hero-slide-actions">
+                      <span className="hero-slide-price">
+                        <span className="currency-symbol">RM</span>
+                        {parseFloat(item.price).toFixed(2)}
+                      </span>
+                      {currentUser?.role !== 'admin' && (
+                        <button
+                          type="button"
+                          className="hero-slide-btn"
+                          onClick={() => handleAddToCart(item)}
+                        >
+                          Add to Cart
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {availableSlideProducts.length > 1 && (
+            <>
+              <button
+                type="button"
+                className="hero-slider-arrow left"
+                onClick={prevSlide}
+                aria-label="Previous slide"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                className="hero-slider-arrow right"
+                onClick={nextSlide}
+                aria-label="Next slide"
+              >
+                ›
+              </button>
+
+              <div className="hero-slider-dots">
+                {availableSlideProducts.map((item, idx) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    aria-label={`Go to slide ${idx + 1}`}
+                    className={`hero-slider-dot ${idx === slideIndex ? 'active' : ''}`}
+                    onClick={() => setSlideIndex(idx)}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
       <div className="catalog-header">
         <h2 className="catalog-title">Product Catalog</h2>
         <div className="catalog-divider"></div>
@@ -153,7 +317,13 @@ function ProductList() {
             const isInactive = item.status === 'inactive';
 
             return (
-              <div key={item.id} className={`product-card ${isInactive ? 'inactive' : ''}`}>
+              <div
+                key={item.id}
+                id={`product-card-${item.id}`}
+                onClick={() => setSelectedProduct(item)}
+                style={{ cursor: 'pointer' }}
+                className={`product-card ${isInactive ? 'inactive' : ''} ${highlightedId === item.id ? 'card-highlight' : ''}`}
+              >
                 {isInactive && <span className="inactive-badge">Unavailable</span>}
 
                 <div>
@@ -188,13 +358,101 @@ function ProductList() {
                 <button
                   className="btn-add-cart"
                   disabled={isInactive || item.stock < 1}
-                  onClick={() => handleAddToCart(item)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAddToCart(item);
+                  }}
                 >
                   {item.stock < 1 ? 'Out of stock' : 'Add to Cart'}
                 </button>
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Product Lightbox / Quick-View Pop-up Modal */}
+      {selectedProduct && (
+        <div
+          className="product-modal-backdrop"
+          onClick={() => setSelectedProduct(null)}
+        >
+          <div
+            className="product-modal-box"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="product-modal-close"
+              onClick={() => setSelectedProduct(null)}
+              aria-label="Close modal"
+            >
+              ✕
+            </button>
+
+            <div className="product-modal-image-wrap">
+              <img
+                src={
+                  selectedProduct.image
+                    ? `http://127.0.0.1:8000/storage/${selectedProduct.image}`
+                    : 'https://via.placeholder.com/600x450?text=No+Image'
+                }
+                alt={selectedProduct.name}
+                className="product-modal-image"
+                onError={(e) => { e.target.src = 'https://via.placeholder.com/600x450?text=No+Image'; }}
+              />
+            </div>
+
+            <div className="product-modal-details">
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
+                {selectedProduct.category?.name && (
+                  <span className="hero-slide-badge" style={{ marginBottom: 0 }}>
+                    {selectedProduct.category.name}
+                  </span>
+                )}
+                <span
+                  className={`badge ${
+                    selectedProduct.status === 'inactive' || Number(selectedProduct.stock) < 1
+                      ? 'badge-failed'
+                      : 'badge-successful'
+                  }`}
+                >
+                  {selectedProduct.status === 'inactive'
+                    ? 'Unavailable'
+                    : Number(selectedProduct.stock) < 1
+                    ? 'Out of Stock'
+                    : `In Stock: ${selectedProduct.stock}`}
+                </span>
+              </div>
+
+              <h2 className="product-modal-title">{selectedProduct.name}</h2>
+
+              <p className="product-modal-desc">
+                {selectedProduct.description || 'No description available.'}
+              </p>
+
+              <div className="product-modal-footer">
+                <div className="product-modal-price">
+                  <span className="currency-symbol">RM</span>
+                  {parseFloat(selectedProduct.price).toFixed(2)}
+                </div>
+
+                {currentUser?.role !== 'admin' && (
+                  <button
+                    type="button"
+                    className="hero-slide-btn"
+                    disabled={selectedProduct.status === 'inactive' || Number(selectedProduct.stock) < 1}
+                    onClick={() => {
+                      handleAddToCart(selectedProduct);
+                      setSelectedProduct(null);
+                    }}
+                  >
+                    {Number(selectedProduct.stock) < 1 ? 'Out of Stock' : 'Add to Cart'}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -205,7 +463,6 @@ function App() {
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));
   const [cartCount, setCartCount] = useState(0);
 
-  // Red badge on the navbar Cart link: total number of items in the cart
   useEffect(() => {
     if (!user || user.role === 'admin') {
       setCartCount(0);
@@ -236,7 +493,6 @@ function App() {
   return (
     <Router>
       <div style={{ minHeight: '100vh', background: '#0B0E14', color: '#F8FAFC' }}>
-        {/* Clean Navigation Navbar */}
         <nav className="navbar">
           <Link to="/" className="nav-logo">
             <span className="nav-logo-accent">ACG</span> Store
@@ -250,6 +506,9 @@ function App() {
                     <Link to="/admin" className="btn-admin">
                       Admin Dashboard
                     </Link>
+                    <Link to="/admin/slides" className="btn-admin">
+                      Slides
+                    </Link>
                     <Link to="/admin/payments" className="btn-admin">
                       Payments
                     </Link>
@@ -259,16 +518,16 @@ function App() {
                   </>
                 ) : (
                   <>
-                    <Link to="/cart" className="nav-link-plain cart-link">
+                    <Link to="/cart" className="btn-admin">
                       Cart
                       {cartCount > 0 && <span className="cart-badge">{cartCount > 99 ? '99+' : cartCount}</span>}
                     </Link>
-                    <Link to="/my-orders" className="nav-link-plain">My Orders</Link>
+                    <Link to="/my-orders" className="btn-admin">My Orders</Link>
                     <Link to="/membership" className="btn-admin">Member</Link>
                   </>
                 )}
 
-                <Link to="/profile" className="nav-link-plain">
+                <Link to="/profile" className="btn-admin">
                   Profile
                 </Link>
 
@@ -322,6 +581,10 @@ function App() {
           <Route
             path="/admin/payments"
             element={user && user.role === 'admin' ? <AdminPayments /> : <Navigate to="/login" replace />}
+          />
+          <Route 
+            path="/admin/slides" 
+            element={user && user.role === 'admin' ? <AdminSlideManager /> : <Navigate to="/login" replace />} 
           />
           <Route 
             path="/admin" 

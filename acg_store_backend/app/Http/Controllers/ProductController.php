@@ -10,26 +10,18 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
-    /**
-     * Display a listing of products.
-     * Shows all products by default (for Admin), or filters by status if requested.
-     */
     public function index(Request $request)
     {
         $query = Product::with('category');
 
-        // Allow filtering by status (e.g. ?status=active for shop view)
-        // If no status is specified, return all items so Admin panel shows inactive products too
         if ($request->has('status')) {
             $query->where('status', $request->status);
         }
 
-        // Optional filtering by category
         if ($request->has('category_id')) {
             $query->where('category_id', $request->category_id);
         }
 
-        // Optional search by name
         if ($request->has('search')) {
             $query->where('name', 'like', '%' . $request->search . '%');
         }
@@ -40,28 +32,38 @@ class ProductController extends Controller
         ], 200);
     }
 
-    /**
-     * Store a newly created product (Admin Function).
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'category_id' => 'required|exists:categories,id',
+            'category_name' => 'required|string|max:100',
             'name' => 'required|string|max:255',
             'sku' => 'nullable|string|unique:products,sku',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
             'status' => 'in:active,inactive',
         ]);
 
+        // Find existing category (case-insensitive) or create a new one automatically
+        $cleanCategoryName = trim($validated['category_name']);
+        $category = Category::whereRaw('LOWER(name) = ?', [strtolower($cleanCategoryName)])->first();
+
+        if (!$category) {
+            $category = Category::create([
+                'name' => $cleanCategoryName,
+                'slug' => Str::slug($cleanCategoryName) . '-' . Str::random(4),
+                'description' => $cleanCategoryName . ' products',
+            ]);
+        }
+
+        $validated['category_id'] = $category->id;
+        unset($validated['category_name']);
+
         $validated['slug'] = Str::slug($validated['name']) . '-' . Str::random(5);
 
-        // Handle image upload
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('products', 'public');
-            $validated['image'] = $imagePath;
+            $validated['image'] = $request->file('image')->store('products', 'public');
         }
 
         $product = Product::create($validated);
@@ -73,9 +75,6 @@ class ProductController extends Controller
         ], 201);
     }
 
-    /**
-     * Display the specified product.
-     */
     public function show($id)
     {
         $product = Product::with('category')->find($id);
@@ -90,9 +89,6 @@ class ProductController extends Controller
         ], 200);
     }
 
-    /**
-     * Update the specified product (Admin Function).
-     */
     public function update(Request $request, $id)
     {
         $product = Product::find($id);
@@ -102,21 +98,36 @@ class ProductController extends Controller
         }
 
         $validated = $request->validate([
-            'category_id' => 'sometimes|exists:categories,id',
+            'category_name' => 'sometimes|required|string|max:100',
             'name' => 'sometimes|string|max:255',
             'sku' => 'nullable|string|unique:products,sku,' . $id,
             'description' => 'nullable|string',
             'price' => 'sometimes|numeric|min:0',
             'stock' => 'sometimes|integer|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
             'status' => 'in:active,inactive',
         ]);
+
+        if (isset($validated['category_name'])) {
+            $cleanCategoryName = trim($validated['category_name']);
+            $category = Category::whereRaw('LOWER(name) = ?', [strtolower($cleanCategoryName)])->first();
+
+            if (!$category) {
+                $category = Category::create([
+                    'name' => $cleanCategoryName,
+                    'slug' => Str::slug($cleanCategoryName) . '-' . Str::random(4),
+                    'description' => $cleanCategoryName . ' products',
+                ]);
+            }
+
+            $validated['category_id'] = $category->id;
+            unset($validated['category_name']);
+        }
 
         if (isset($validated['name'])) {
             $validated['slug'] = Str::slug($validated['name']) . '-' . Str::random(5);
         }
 
-        // Handle new image upload & remove old image
         if ($request->hasFile('image')) {
             if ($product->image && Storage::disk('public')->exists($product->image)) {
                 Storage::disk('public')->delete($product->image);
@@ -133,22 +144,23 @@ class ProductController extends Controller
         ], 200);
     }
 
-    /**
-     * Remove the specified product using soft delete (Admin Function).
-     */
     public function destroy($id)
     {
-        $product = Product::find($id);
+        $product = Product::withTrashed()->find($id);
 
         if (!$product) {
             return response()->json(['message' => 'Product not found'], 404);
         }
 
-        $product->delete(); // Soft delete
+        if ($product->image && Storage::disk('public')->exists($product->image)) {
+            Storage::disk('public')->delete($product->image);
+        }
+
+        $product->forceDelete();
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Product deleted successfully'
+            'message' => 'Product permanently deleted'
         ], 200);
     }
 }
