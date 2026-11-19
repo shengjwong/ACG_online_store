@@ -129,6 +129,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/cart/{cartItem}', [CartController::class, 'destroy']);
     Route::get('/my-orders', [OrderController::class, 'mine']);
     Route::put('/my-orders/{order}/address', [OrderController::class, 'updateAddress']);
+    Route::post('/my-orders/{order}/cancel', [OrderController::class, 'cancelOrder']);
     Route::post('/my-orders/{order}/confirm-received', [OrderController::class, 'confirmReceived']);
     Route::get('/admin/orders', [OrderController::class, 'adminIndex']);
     Route::put('/admin/orders/{order}', [OrderController::class, 'adminUpdate']);

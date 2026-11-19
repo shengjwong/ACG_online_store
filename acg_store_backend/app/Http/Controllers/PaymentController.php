@@ -205,7 +205,13 @@ class PaymentController extends Controller
 
             // Membership loyalty: award once when this payment is captured successfully.
             $member = User::whereKey($order->user_id)->lockForUpdate()->first();
-            if ($member && $member->role === 'member' && $member->membership_registered_at && ! PointsTransaction::where('reference_type', 'payment')->where('reference_id', (string) $payment->id)->exists()) {
+            if (
+                $member &&
+                $member->role === 'member' &&
+                ! PointsTransaction::where('reference_type', 'payment')
+                    ->where('reference_id', (string) $payment->id)
+                    ->exists()
+            ) {
                 $eligibleSpend = (float) $order->subtotal;
                 $earned = (int) floor($eligibleSpend);
                 $member->total_spend = (float) $member->total_spend + $eligibleSpend;

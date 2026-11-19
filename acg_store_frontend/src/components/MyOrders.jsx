@@ -4,7 +4,8 @@ import api from '../api/axios';
 import '../styles/Shop.css';
 
 const statusSteps = ['paid', 'processing', 'shipped', 'delivered', 'completed'];
-const labels = { paid: 'Paid', processing: 'Preparing', shipped: 'On the Way', delivered: 'Delivered', completed: 'Completed' };
+const labels = { paid: 'Paid', processing: 'Preparing', shipped: 'On the Way', delivered: 'Delivered', completed: 'Completed', cancelled: 'Cancelled' };
+const statusOptions = [...statusSteps, 'cancelled'];
 const date = (value) => value ? new Date(`${String(value).slice(0, 10)}T00:00:00`).toLocaleDateString('en-GB') : 'Not set';
 
 function MyOrders() {
@@ -33,6 +34,21 @@ function MyOrders() {
     try { await api.post(`/payments/${payment.id}/cancel`); await loadOrders(); }
     catch (err) { setError(err.response?.data?.message || 'Could not cancel payment.'); }
   };
+  const cancelOrder = async (order) => {
+    const confirmed = window.confirm(`Cancel order ${order.order_number}? This will only cancel the order. No refund will be issued.`);
+    if (!confirmed) return;
+    setBusyId(order.id);
+    setError('');
+    try {
+      await api.post(`/my-orders/${order.id}/cancel`);
+      await loadOrders();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Could not cancel this order.');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   const confirmReceived = async (order) => {
     if (!window.confirm(`Confirm that you received order ${order.order_number}?`)) return;
     setBusyId(order.id); setError('');
@@ -59,7 +75,7 @@ function MyOrders() {
     <div className="shop-toolbar">
       <input className="shop-input" placeholder="Search order number" value={search} onChange={(e) => setSearch(e.target.value)} />
       <select className="shop-select" value={status} onChange={(e) => setStatus(e.target.value)}>
-        <option value="">All statuses</option>{statusSteps.map((s) => <option key={s} value={s}>{labels[s]}</option>)}
+        <option value="">All statuses</option>{statusOptions.map((s) => <option key={s} value={s}>{labels[s]}</option>)}
       </select>
     </div>
     {visible.length === 0 ? <div className="shop-card shop-empty">{orders.length ? 'No orders match your search.' : <>You have no paid orders yet.<br/><Link to="/" className="shop-btn shop-btn-primary">Browse products</Link></>}</div> : visible.map((order) => {
@@ -89,7 +105,11 @@ function MyOrders() {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 16 }}>
           {statusSteps.map((step, i) => <span key={step} style={{ fontSize: 12, padding: '6px 9px', borderRadius: 20, background: i <= current ? 'rgba(34,197,94,.18)' : 'rgba(255,255,255,.07)', color: i <= current ? '#86efac' : '#94a3b8' }}>{labels[step]}</span>)}
         </div>
-        {order.order_status === 'delivered' && <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}><button className="shop-btn shop-btn-primary" disabled={busyId === order.id} onClick={() => confirmReceived(order)}>{busyId === order.id ? 'Confirming...' : 'Confirm Received'}</button></div>}
+        {['paid', 'processing', 'shipped', 'delivered'].includes(order.order_status) && <div style={{ display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap', gap: 8, marginTop: 18 }}>
+          <button type="button" className="shop-btn shop-btn-danger" disabled={busyId === order.id} onClick={() => cancelOrder(order)}>{busyId === order.id ? 'Processing...' : 'Cancel Order'}</button>
+          {order.order_status === 'delivered' && <button type="button" className="shop-btn shop-btn-primary" disabled={busyId === order.id} onClick={() => confirmReceived(order)}>Confirm Received</button>}
+        </div>}
+        {order.order_status === 'cancelled' && <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}><span className="shop-btn" style={{ color: '#fca5a5', cursor: 'default' }}>Order Cancelled</span></div>}
         {order.order_status === 'completed' && <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}><span className="shop-btn" style={{ color: '#86efac', cursor: 'default' }}>✓ Completed · {order.completed_at ? new Date(order.completed_at).toLocaleDateString('en-GB') : 'Confirmed'}</span></div>}
       </section>;
     })}

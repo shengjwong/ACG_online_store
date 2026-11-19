@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class OrderController extends Controller
@@ -36,6 +37,42 @@ class OrderController extends Controller
         $order->update($validated);
 
         return response()->json(['status' => 'success', 'message' => 'Delivery address updated.', 'data' => $order->fresh()]);
+    }
+
+    /** Customer cancels their own order. This action does not issue a refund. */
+    public function cancelOrder(Request $request, Order $order)
+    {
+        abort_unless($order->user_id === $request->user()->id, 403, 'This order is not yours.');
+
+        return DB::transaction(function () use ($order) {
+            $lockedOrder = Order::whereKey($order->id)->lockForUpdate()->firstOrFail();
+
+            if ($lockedOrder->order_status === 'cancelled') {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Order is already cancelled.',
+                    'data' => $lockedOrder,
+                ]);
+            }
+
+            if (! in_array($lockedOrder->order_status, ['paid', 'processing', 'shipped', 'delivered'], true)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'This order can no longer be cancelled.',
+                ], 422);
+            }
+
+            $lockedOrder->update([
+                'order_status' => 'cancelled',
+                'cancel_reason' => 'Cancelled by customer. No refund requested.',
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Order cancelled. No refund has been issued.',
+                'data' => $lockedOrder->fresh()->load(['items', 'payment']),
+            ]);
+        });
     }
 
     /** Customer confirms receipt only after the order is marked delivered. */
@@ -84,8 +121,8 @@ class OrderController extends Controller
             'estimated_delivery_end' => 'required|date|after_or_equal:estimated_delivery_start',
         ]);
 
-        if ($order->order_status === 'completed') {
-            return response()->json(['status' => 'error', 'message' => 'Completed orders cannot be changed.'], 422);
+        if (in_array($order->order_status, ['completed', 'cancelled'], true)) {
+            return response()->json(['status' => 'error', 'message' => 'Completed or cancelled orders cannot be changed.'], 422);
         }
 
         $changes = $validated;
